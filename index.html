@@ -46,31 +46,29 @@
                 <th width="25%">KETERANGAN</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
-            </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 </div>
 
 <script>
-    // --- TEMPELKAN API KEY KAMU DI SINI ---
-    const SUPABASE_URL = 'sb_publishable_hrpoh-1TTI_S58tluF2BVQ_ADnluS2o'; 
+    // --- PERBAIKAN DI SINI ---
+    // URL harus diawali https:// dan diakhiri .supabase.co
+    const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Set tanggal hari ini otomatis
     document.getElementById('tgl_input').valueAsDate = new Date();
 
-    // Daftar Data Sesuai Gambar
     const dataAir = [
         { type: 'header', label: 'SALURAN INDUK CIMULU' },
-        ...Array.from({length: 30}, (_, i) => ({ no: i+1, nama: `BCMU - ${i+1}`, butuh: 0, sedia: 0 })),
+        ...Array.from({length: 30}, (_, i) => ({ no: i+1, nama: `BCMU - ${i+1}` })),
         { type: 'header', label: 'SALURAN SEKUNDER DALAM SUBA' },
-        ...Array.from({length: 5}, (_, i) => ({ no: i+1, nama: `BDS - ${i+1}`, butuh: 0, sedia: 0 })),
+        ...Array.from({length: 5}, (_, i) => ({ no: i+1, nama: `BDS - ${i+1}` })),
         { type: 'header', label: 'SALURAN SEKUNDER CIHANYANG' },
-        ...Array.from({length: 4}, (_, i) => ({ no: i+1, nama: `BCH - ${i+1}`, butuh: 0, sedia: 0 }))
+        ...Array.from({length: 4}, (_, i) => ({ no: i+1, nama: `BCH - ${i+1}` }))
     ];
 
-    // Fungsi untuk memunculkan tabel otomatis
     function renderTabel() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
@@ -91,7 +89,6 @@
         });
     }
 
-    // Fungsi hitung otomatis saat angka diketik
     function hitung(el) {
         const row = el.closest('tr');
         const butuh = parseFloat(row.querySelector('.inp-butuh').value) || 0;
@@ -105,30 +102,43 @@
         colStatus.className = `col-status ${isCukup ? 'status-cukup' : 'status-kurang'}`;
     }
 
-    // Fungsi kirim data ke Supabase
     async function simpanKeSupabase() {
         const tgl = document.getElementById('tgl_input').value;
         const rows = document.querySelectorAll('.row-data');
         const payload = [];
 
         rows.forEach(row => {
+            const selisihText = row.querySelector('.col-selisih').innerText;
             payload.push({
                 tanggal: tgl,
                 nama_bangunan: row.querySelector('.nama-bangunan').innerText,
-                kebutuhan: parseFloat(row.querySelector('.inp-butuh').value),
-                ketersediaan: parseFloat(row.querySelector('.inp-sedia').value),
-                selisih: parseFloat(row.querySelector('.col-selisih').innerText),
+                kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
+                ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
+                selisih: parseFloat(selisihText) || 0,
                 status: row.querySelector('.col-status').innerText
             });
         });
 
+        // Tampilkan loading sederhana
+        const btn = document.querySelector('.btn-save');
+        btn.innerText = "PROSES SIMPAN...";
+        btn.disabled = true;
+
         const { error } = await _supabase.from('laporan_air').insert(payload);
-        if (error) alert("Gagal: " + error.message);
-        else alert("Berhasil simpan semua data!");
+        
+        btn.innerText = "SIMPAN SEMUA DATA";
+        btn.disabled = false;
+
+        if (error) {
+            alert("Gagal: " + error.message);
+            console.error(error);
+        } else {
+            alert("Berhasil simpan semua data!");
+        }
     }
 
-    // JALANKAN FUNGSI RENDER
-    renderTabel();
+    // Panggil fungsi setelah semua script siap
+    window.onload = renderTabel;
 </script>
 </body>
 </html>
