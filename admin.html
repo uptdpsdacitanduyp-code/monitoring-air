@@ -14,17 +14,19 @@
         th { background: #333; color: white; text-transform: uppercase; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         
-        .filter-box { margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .filter-box { margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
         .status-cukup { color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 5px; border-radius: 4px; }
         .status-kurang { color: #c62828; font-weight: bold; background: #ffebee; padding: 5px; border-radius: 4px; }
         
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; font-size: 13px; }
         .btn-blue { background: #2196F3; color: white; }
         .btn-green { background: #3ecf8e; color: white; }
+        .btn-red { background: #f44336; color: white; }
         .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
 
         @media print {
-            .filter-box, .btn, a { display: none !important; }
+            .filter-box, .btn, a, .col-aksi { display: none !important; }
             .container { box-shadow: none; border: none; width: 100%; }
         }
     </style>
@@ -33,9 +35,10 @@
 
 <div class="container">
     <h2>Halaman Admin - Rekap Data Harian</h2>
-    <div style="text-align: center; margin-bottom: 20px;">
+    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
         <a href="index.html" class="btn btn-outline">← Kembali ke Form Input</a>
         <button class="btn btn-blue" onclick="window.print()">Cetak Laporan (PDF)</button>
+        <button class="btn btn-red" onclick="hapusSemuaData()">Hapus Semua Rekap</button>
     </div>
 
     <div class="filter-box">
@@ -54,28 +57,29 @@
                 <th>Ketersediaan (l/dtk)</th>
                 <th>Selisih</th>
                 <th>Status</th>
+                <th class="col-aksi">Aksi</th>
             </tr>
         </thead>
         <tbody id="adminBody">
-            <tr><td colspan="6">Memuat data...</td></tr>
+            <tr><td colspan="7">Memuat data... silakan tunggu.</td></tr>
         </tbody>
     </table>
 </div>
 
 <script>
-    // --- ISI DENGAN API KEY SUPABASE KAMU ---
-    const SUPABASE_URL = 'sb_publishable_hrpoh-1TTI_S58tluF2BVQ_ADnluS2o'; 
+    const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function muatData() {
         const filter = document.getElementById('filterTgl').value;
         const tbody = document.getElementById('adminBody');
         
-        // Mulai Query
-        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false });
+        tbody.innerHTML = `<tr><td colspan="7">Sedang mengambil data...</td></tr>`;
 
-        // Jika user memilih tanggal
+        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false }).order('id', { ascending: true });
+
         if (filter) {
             query = query.eq('tanggal', filter);
         }
@@ -84,11 +88,12 @@
 
         if (error) {
             alert("Gagal mengambil data: " + error.message);
+            tbody.innerHTML = `<tr><td colspan="7" style="color:red">Error: ${error.message}</td></tr>`;
             return;
         }
 
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6">Data tidak ditemukan untuk tanggal tersebut.</td></tr>`;
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">Data belum tersedia atau tidak ditemukan.</td></tr>`;
             return;
         }
 
@@ -96,19 +101,50 @@
             <tr>
                 <td>${formatTanggal(item.tanggal)}</td>
                 <td><strong>${item.nama_bangunan}</strong></td>
-                <td>${item.kebutuhan.toFixed(2)}</td>
-                <td>${item.ketersediaan.toFixed(2)}</td>
-                <td style="font-weight:bold">${item.selisih > 0 ? '+' : ''}${item.selisih.toFixed(2)}</td>
+                <td>${parseFloat(item.kebutuhan).toFixed(2)}</td>
+                <td>${parseFloat(item.ketersediaan).toFixed(2)}</td>
+                <td style="font-weight:bold">${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih).toFixed(2)}</td>
                 <td>
                     <span class="${item.status === 'CUKUP' ? 'status-cukup' : 'status-kurang'}">
                         ${item.status}
                     </span>
                 </td>
+                <td class="col-aksi">
+                    <button class="btn btn-red btn-sm" onclick="hapusData(${item.id})">Hapus</button>
+                </td>
             </tr>
         `).join('');
     }
 
+    // Fungsi Hapus Satu Data
+    async function hapusData(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus baris data ini?")) {
+            const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
+            if (error) {
+                alert("Gagal menghapus: " + error.message);
+            } else {
+                muatData(); // Refresh tabel
+            }
+        }
+    }
+
+    // Fungsi Hapus Semua Data
+    async function hapusSemuaData() {
+        const password = prompt("PERINGATAN: Semua data akan dihapus permanen. Ketik 'KONFIRMASI' untuk melanjutkan:");
+        if (password === "KONFIRMASI") {
+            // Supabase membutuhkan filter untuk delete, kita gunakan filter yang selalu benar (ne.0 artinya id tidak sama dengan 0)
+            const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
+            if (error) {
+                alert("Gagal menghapus semua data: " + error.message);
+            } else {
+                alert("Semua data berhasil dibersihkan.");
+                muatData();
+            }
+        }
+    }
+
     function formatTanggal(tgl) {
+        if(!tgl) return "-";
         const d = new Date(tgl);
         return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     }
@@ -118,8 +154,7 @@
         muatData();
     }
 
-    // Jalankan otomatis saat halaman dibuka
-    muatData();
+    window.onload = muatData;
 </script>
 </body>
 </html>
