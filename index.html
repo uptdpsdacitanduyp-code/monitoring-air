@@ -159,8 +159,8 @@
         
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
-            // DI SINI PERUBAHANNYA: Menggunakan 'nama_bangunan' agar cocok dengan SQL
-            nama_bangunan: row.querySelector('.nama-text').innerText,
+            // Nama kolom disesuaikan dengan SQL terbaru: bendungan_dan_foto
+            bendungan_dan_foto: row.querySelector('.nama-text').innerText,
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
             selisih: parseFloat(row.querySelector('.col-selisih').innerText) || 0,
