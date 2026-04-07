@@ -1,389 +1,190 @@
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Laporan Monitoring Air Lengkap - 10 Bendung</title>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
-
         body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f0f2f5; }
-
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
-
         h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; }
-
         
-
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-
         .btn-admin { padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
-
         
-
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-
         th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; word-wrap: break-word; }
-
         th { background-color: #f8f9fa; height: 60px; text-transform: uppercase; }
 
-
-
-        /* STYLE FOTO */
-
         .nama-container { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-
         .img-bendung { 
-
             width: 140px; height: 90px; 
-
             object-fit: cover; border-radius: 6px; border: 2px solid #333;
-
             cursor: pointer; transition: 0.3s;
-
         }
-
         .img-bendung:hover { transform: scale(1.05); }
 
-
-
-        /* MODAL ZOOM */
-
         #imageModal {
-
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
-
             width: 100%; height: 100%; background: rgba(0,0,0,0.9);
-
             justify-content: center; align-items: center; flex-direction: column;
-
         }
-
         #modalImg { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 10px; }
 
-
-
         input { width: 90%; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
-
         .btn-save { padding: 15px; background: #3ecf8e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; font-size: 16px; }
-
         
-
         .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; }
-
         .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; }
-
     </style>
-
 </head>
-
 <body>
 
-
-
 <div id="imageModal">
-
     <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer;" onclick="tutupModal()">&times;</span>
-
     <img id="modalImg">
-
     <p id="caption" style="color: white; margin-top: 15px; font-size: 18px;"></p>
-
 </div>
-
-
 
 <div class="container">
-
     <h2>Input Monitoring Air & Data Lahan</h2>
-
     
-
     <div class="controls">
-
         <a href="admin.html" class="btn-admin">← LIHAT REKAP ADMIN</a>
-
         <div>
-
             <label>Tanggal: </label>
-
             <input type="date" id="tgl_input" style="width: auto;">
-
         </div>
-
     </div>
 
-
-
     <table>
-
         <thead>
-
             <tr>
-
                 <th width="40px">NO</th>
-
                 <th width="180px">NAMA BANGUNAN & FOTO</th>
-
-                <th>KEBUTUHAN AIR (m³/s)</th>
-
-                <th>KETERSEDIAAN AIR (m³/s)</th>
-
-                <th>KEKURANGAN/ KELEBIHAN</th>
-
-                <th>LUAS LAYANAN (HEKTAR)</th>
-
-                <th>PENGOLAHAN TANAH</th>
-
-                <th>PERTUMBUHAN</th>
-
+                <th>KEBUTUHAN (m³/s)</th>
+                <th>KETERSEDIAAN (m³/s)</th>
+                <th>+/-</th>
+                <th>LUAS (HA)</th>
+                <th>OLAH TANAH</th>
+                <th>TUMBUH</th>
                 <th>PANEN</th>
-
-                <th width="100px">KETERANGAN</th>
-
+                <th width="100px">KET</th>
             </tr>
-
         </thead>
-
         <tbody id="tableBody"></tbody>
-
     </table>
 
-
-
     <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA KE DATABASE</button>
-
 </div>
 
-
-
 <script>
-
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
-
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
-
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/foto-bendung/`;
-
-
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
-
-
     const daftarBendung = [
-
         "CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", 
-
         "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"
-
     ];
 
-
-
     function renderTabel() {
-
         const tbody = document.getElementById('tableBody');
-
         tbody.innerHTML = "";
-
         
-
         daftarBendung.forEach((nama, i) => {
-
-            // Mengubah nama menjadi format file (kecil semua, tanpa spasi)
-
-            const fileName = nama.toLowerCase().replace(/\s+/g, '') + ".jpg";
-
-            const fullUrl = STORAGE_URL + fileName;
-
-
+            // Memanggil file dari folder img/ berdasarkan nomor urut (1.jpeg, 2.jpeg, dst)
+            const fileName = (i + 1) + ".jpeg"; 
+            const fullUrl = "img/" + fileName;
 
             tbody.innerHTML += `
-
                 <tr class="row-data">
-
                     <td>${i + 1}</td>
-
                     <td>
-
                         <div class="nama-container">
-
                             <img src="${fullUrl}" class="img-bendung" 
-
                                  onclick="zoomGambar('${fullUrl}', 'Bendung ${nama}')"
-
-                                 onerror="this.src='img/1.jpeg'">
-
+                                 onerror="this.src='https://via.placeholder.com/140x90?text=No+Photo'">
                             <span class="nama-text" style="font-weight:bold;">${nama}</span>
-
                         </div>
-
                     </td>
-
                     <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
-
                     <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
-
                     <td class="col-selisih">0.00</td>
-
                     <td><input type="number" step="0.01" class="inp-luas" value="0.00"></td>
-
                     <td><input type="number" step="0.01" class="inp-olah" value="0.00"></td>
-
                     <td><input type="number" step="0.01" class="inp-tumbuh" value="0.00"></td>
-
                     <td><input type="number" step="0.01" class="inp-panen" value="0.00"></td>
-
                     <td class="col-status status-cukup">CUKUP</td>
-
                 </tr>`;
-
         });
-
     }
-
-
 
     function hitung(el) {
-
         const row = el.closest('tr');
-
         const butuh = parseFloat(row.querySelector('.inp-butuh').value) || 0;
-
         const sedia = parseFloat(row.querySelector('.inp-sedia').value) || 0;
-
         const selisih = (sedia - butuh).toFixed(2);
-
         
-
         const colSelisih = row.querySelector('.col-selisih');
-
         const colStatus = row.querySelector('.col-status');
-
         
-
         colSelisih.innerText = (selisih >= 0 ? "+" : "") + selisih;
-
         
-
         if (parseFloat(selisih) < 0) {
-
             colStatus.innerText = "KURANG AIR";
-
             colStatus.className = "col-status status-kurang";
-
         } else {
-
             colStatus.innerText = "CUKUP";
-
             colStatus.className = "col-status status-cukup";
-
         }
-
     }
-
-
 
     function zoomGambar(url, txt) {
-
         document.getElementById('imageModal').style.display = "flex";
-
         document.getElementById('modalImg').src = url;
-
         document.getElementById('caption').innerText = txt;
-
     }
-
-
 
     function tutupModal() { document.getElementById('imageModal').style.display = "none"; }
 
-
-
     async function simpanKeSupabase() {
-
         const tgl = document.getElementById('tgl_input').value;
-
         const rows = document.querySelectorAll('.row-data');
-
         
-
         const payload = Array.from(rows).map(row => ({
-
             tanggal: tgl,
-
-            // Mengirim data ke kolom 'nama_bendung' sesuai SQL terbaru
-
             bendungan_dan_foto: row.querySelector('.nama-text').innerText,
-
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
-
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
-
             selisih: parseFloat(row.querySelector('.col-selisih').innerText) || 0,
-
             luas_layanan: parseFloat(row.querySelector('.inp-luas').value) || 0,
-
             pengolahan_tanah: parseFloat(row.querySelector('.inp-olah').value) || 0,
-
             pertumbuhan: parseFloat(row.querySelector('.inp-tumbuh').value) || 0,
-
             panen: parseFloat(row.querySelector('.inp-panen').value) || 0,
-
             keterangan: row.querySelector('.col-status').innerText
-
         }));
 
-
-
         const btn = document.querySelector('.btn-save');
-
         btn.innerText = "SEDANG MENYIMPAN...";
-
         btn.disabled = true;
 
-
-
         const { error } = await _supabase.from('laporan_air').insert(payload);
-
         
-
         btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
-
         btn.disabled = false;
 
-
-
         if (error) {
-
             alert("Gagal Simpan: " + error.message);
-
-            console.error(error);
-
         } else {
-
-            alert("Berhasil! Semua data monitoring dan lahan telah disimpan.");
-
+            alert("Berhasil! Semua data monitoring telah disimpan.");
         }
-
     }
 
-
-
     window.onload = renderTabel;
-
 </script>
-
 </body>
-
 </html>
