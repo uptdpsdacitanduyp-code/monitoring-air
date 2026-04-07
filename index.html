@@ -99,6 +99,7 @@
         tbody.innerHTML = "";
         
         daftarBendung.forEach((nama, i) => {
+            // Mengubah nama menjadi format file (kecil semua, tanpa spasi)
             const fileName = nama.toLowerCase().replace(/\s+/g, '') + ".jpg";
             const fullUrl = STORAGE_URL + fileName;
 
@@ -159,7 +160,7 @@
         
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
-            // Nama kolom disesuaikan dengan SQL terbaru: bendungan_dan_foto
+            // Mengirim data ke kolom 'bendungan_dan_foto' sesuai SQL terbaru
             bendungan_dan_foto: row.querySelector('.nama-text').innerText,
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
