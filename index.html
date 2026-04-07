@@ -61,11 +61,11 @@
     document.getElementById('tgl_input').valueAsDate = new Date();
 
     const dataAir = [
-        { type: 'header', label: 'SALURAN INDUK CIMULU' },
+        { type: 'header', label: '' },
         ...Array.from({length: 30}, (_, i) => ({ no: i+1, nama: `BCMU - ${i+1}` })),
-        { type: 'header', label: 'SALURAN SEKUNDER DALAM SUBA' },
+        { type: 'header', label: '' },
         ...Array.from({length: 5}, (_, i) => ({ no: i+1, nama: `BDS - ${i+1}` })),
-        { type: 'header', label: 'SALURAN SEKUNDER CIHANYANG' },
+        { type: 'header', label: '' },
         ...Array.from({length: 4}, (_, i) => ({ no: i+1, nama: `BCH - ${i+1}` }))
     ];
 
