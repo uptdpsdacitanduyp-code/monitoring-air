@@ -10,6 +10,11 @@
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
         h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; }
         
+        /* HEADER CONTROLS */
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px; background: #fff; border-radius: 8px; }
+        .btn-admin { padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        .btn-admin:hover { background: #1976D2; }
+
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: 1px solid #000; padding: 12px; text-align: center; font-size: 14px; }
         th { background-color: #f8f9fa; }
@@ -17,28 +22,28 @@
         /* STYLE FOTO DI TABEL */
         .nama-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .img-bendung { 
-            width: 150px; /* Ukuran Lebar */
-            height: 100px; /* Ukuran Tinggi */
+            width: 160px; 
+            height: 110px; 
             object-fit: cover; 
             border-radius: 8px; 
             border: 2px solid #444;
             cursor: pointer; 
             transition: 0.3s;
         }
-        .img-bendung:hover { transform: scale(1.05); border-color: #2196F3; }
+        .img-bendung:hover { transform: scale(1.08); border-color: #2196F3; }
 
         /* MODAL ZOOM GAMBAR */
         #imageModal {
             display: none; position: fixed; z-index: 999; left: 0; top: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            width: 100%; height: 100%; background: rgba(0,0,0,0.9);
             justify-content: center; align-items: center; flex-direction: column;
         }
         #modalImg { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 10px; }
-        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; }
 
         /* LAIN-LAIN */
-        input { width: 80%; padding: 6px; text-align: center; border-radius: 4px; border: 1px solid #ccc; }
-        .btn-save { padding: 15px 30px; background: #3ecf8e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; }
+        input { width: 85%; padding: 8px; text-align: center; border-radius: 4px; border: 1px solid #ccc; }
+        .btn-save { padding: 15px; background: #3ecf8e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; font-size: 16px; }
         .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; }
         .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; }
     </style>
@@ -48,22 +53,26 @@
 <div id="imageModal">
     <span class="close-btn" onclick="tutupModal()">&times;</span>
     <img id="modalImg">
-    <p id="caption" style="color: white; margin-top: 10px; font-size: 18px;"></p>
+    <p id="caption" style="color: white; margin-top: 15px; font-size: 20px; font-weight: bold;"></p>
 </div>
 
 <div class="container">
     <h2>Laporan Monitoring Air (10 Nomor)</h2>
     
-    <div style="margin-bottom: 15px; text-align: right;">
-        <label>Pilih Tanggal: </label>
-        <input type="date" id="tgl_input" style="width: auto;">
+    <div class="controls">
+        <a href="admin.html" class="btn-admin">← LIHAT REKAP ADMIN</a>
+        
+        <div>
+            <label>Tanggal: </label>
+            <input type="date" id="tgl_input" style="width: auto;">
+        </div>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th width="10%">NO</th>
-                <th width="40%">NAMA BENDUNG & FOTO</th>
+                <th width="8%">NO</th>
+                <th width="42%">NAMA BENDUNG & VISUAL</th>
                 <th width="15%">BUTUH</th>
                 <th width="15%">SEDIA</th>
                 <th width="20%">STATUS</th>
@@ -72,7 +81,7 @@
         <tbody id="tableBody"></tbody>
     </table>
 
-    <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA</button>
+    <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA KE DATABASE</button>
 </div>
 
 <script>
@@ -83,14 +92,13 @@
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
-    // Render 10 Nomor Saja
     function renderTabel() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
         
         for (let i = 0; i < 10; i++) {
             const namaBendung = `CIMULU BCMU.${i}`;
-            const namaFile = `cimulubcmu${i}.jpg`; // Pastikan nama file di storage tanpa spasi/titik
+            const namaFile = `cimulubcmu${i}.jpg`; 
             const fullUrl = STORAGE_URL + namaFile;
 
             tbody.innerHTML += `
@@ -100,8 +108,8 @@
                         <div class="nama-container">
                             <img src="${fullUrl}" class="img-bendung" 
                                  onclick="zoomGambar('${fullUrl}', '${i+1}. ${namaBendung}')"
-                                 onerror="this.src='https://via.placeholder.com/150x100?text=Tanpa+Foto'">
-                            <span class="nama-text">${i+1}. ${namaBendung}</span>
+                                 onerror="this.src='https://via.placeholder.com/160x110?text=Foto+Belum+Ada'">
+                            <span class="nama-text" style="font-weight:bold;">${i+1}. ${namaBendung}</span>
                         </div>
                     </td>
                     <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
@@ -127,7 +135,8 @@
     }
 
     function zoomGambar(url, txt) {
-        document.getElementById('imageModal').style.display = "flex";
+        const modal = document.getElementById('imageModal');
+        modal.style.display = "flex";
         document.getElementById('modalImg').src = url;
         document.getElementById('caption').innerText = txt;
     }
@@ -139,6 +148,7 @@
     async function simpanKeSupabase() {
         const tgl = document.getElementById('tgl_input').value;
         const rows = document.querySelectorAll('.row-data');
+        
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
             nama_bangunan: row.querySelector('.nama-text').innerText,
@@ -148,19 +158,26 @@
         }));
 
         const btn = document.querySelector('.btn-save');
-        btn.innerText = "SEDANG MENYIMPAN...";
+        btn.innerText = "SEDANG MENGIRIM DATA...";
         btn.disabled = true;
 
         const { error } = await _supabase.from('laporan_air').insert(payload);
         
-        btn.innerText = "SIMPAN SEMUA DATA";
+        btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
         btn.disabled = false;
 
-        if (error) alert("Error: " + error.message);
-        else alert("10 Data Berhasil Disimpan!");
+        if (error) alert("Gagal Simpan: " + error.message);
+        else alert("Berhasil! 10 Data Laporan sudah masuk ke Supabase.");
     }
 
     window.onload = renderTabel;
+
+    // Tutup modal kalau klik area hitam
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('imageModal')) {
+            tutupModal();
+        }
+    }
 </script>
 </body>
 </html>
