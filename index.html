@@ -157,9 +157,9 @@
         const tgl = document.getElementById('tgl_input').value;
         const rows = document.querySelectorAll('.row-data');
         
-        // Bagian ini harus sama persis dengan nama kolom di SQL Editor tadi
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
+            // Kuncinya di sini: Sesuaikan nama kolom dengan database kamu (nama_bangunan)
             nama_bangunan: row.querySelector('.nama-text').innerText, 
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
@@ -175,7 +175,6 @@
         btn.innerText = "SEDANG MENYIMPAN...";
         btn.disabled = true;
 
-        // Pastikan nama tabelnya 'laporan_air'
         const { error } = await _supabase.from('laporan_air').insert(payload);
         
         btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
@@ -183,9 +182,8 @@
 
         if (error) {
             alert("Gagal Simpan: " + error.message);
-            console.error(error);
         } else {
-            alert("Berhasil! Data 10 Bendung sudah masuk ke database.");
+            alert("Berhasil! Semua data telah masuk ke Supabase.");
         }
     }
 </script>
