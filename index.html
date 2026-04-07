@@ -153,12 +153,14 @@
 
     function tutupModal() { document.getElementById('imageModal').style.display = "none"; }
 
-    async function simpanKeSupabase() {
+  async function simpanKeSupabase() {
         const tgl = document.getElementById('tgl_input').value;
         const rows = document.querySelectorAll('.row-data');
+        
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
-            nama_bendung: row.querySelector('.nama-text').innerText,
+            // Kuncinya di sini: Sesuaikan nama kolom dengan database kamu (nama_bangunan)
+            nama_bangunan: row.querySelector('.nama-text').innerText, 
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
             selisih: parseFloat(row.querySelector('.col-selisih').innerText) || 0,
@@ -174,14 +176,16 @@
         btn.disabled = true;
 
         const { error } = await _supabase.from('laporan_air').insert(payload);
+        
         btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
         btn.disabled = false;
 
-        if (error) alert("Gagal Simpan: " + error.message + "\nPastikan nama kolom di database sudah sesuai.");
-        else alert("Berhasil! Semua data monitoring dan lahan telah disimpan.");
+        if (error) {
+            alert("Gagal Simpan: " + error.message);
+        } else {
+            alert("Berhasil! Semua data telah masuk ke Supabase.");
+        }
     }
-
-    window.onload = renderTabel;
 </script>
 </body>
 </html>
