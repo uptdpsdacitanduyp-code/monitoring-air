@@ -19,6 +19,17 @@
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .btn-save { padding: 12px 25px; background: #3ecf8e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-admin { padding: 10px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; }
+
+        /* CSS TAMBAHAN UNTUK FOTO */
+        .nama-container { display: flex; align-items: center; text-align: left; gap: 10px; }
+        .img-bendung { 
+            width: 45px; 
+            height: 45px; 
+            object-fit: cover; 
+            border-radius: 6px; 
+            border: 1px solid #ccc;
+            background-color: #eee;
+        }
     </style>
 </head>
 <body>
@@ -39,11 +50,11 @@
         <thead>
             <tr>
                 <th width="5%">NO</th>
-                <th width="20%">NAMA BENDUNG</th>
-                <th width="15%">LUAS LAYANAN (HEKTAR)</th>
-                <th width="15%">PENGELOLAHAN TANAH</th>
-                <th width="20%">PERTUMBUHAN</th>
-                <th width="25%">PANEN</th>
+                <th width="25%">NAMA BENDUNG</th>
+                <th width="15%">KEBUTUHAN (m³/s)</th>
+                <th width="15%">KETERSEDIAAN (m³/s)</th>
+                <th width="20%">SELISIH</th>
+                <th width="20%">STATUS</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -51,21 +62,22 @@
 </div>
 
 <script>
-    // --- PERBAIKAN DI SINI ---
-    // URL harus diawali https:// dan diakhiri .supabase.co
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // URL Storage Supabase (Sesuaikan nama bucket 'foto-bendung')
+    const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/foto-bendung/`;
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
     const dataAir = [
         { type: 'header', label: 'SALURAN INDUK CIMULU' },
         ...Array.from({length: 30}, (_, i) => ({ no: i+1, nama: `BCMU - ${i+1}` })),
-        { type: 'header', label: '' },
+        { type: 'header', label: 'BENDUNG LAINNYA' },
         ...Array.from({length: 5}, (_, i) => ({ no: i+1, nama: `BDS - ${i+1}` })),
-        { type: 'header', label: '' },
+        { type: 'header', label: 'SALURAN LAIN' },
         ...Array.from({length: 4}, (_, i) => ({ no: i+1, nama: `BCH - ${i+1}` }))
     ];
 
@@ -76,10 +88,22 @@
             if (item.type === 'header') {
                 tbody.innerHTML += `<tr class="section-header"><td colspan="6">${item.label}</td></tr>`;
             } else {
+                // Menghasilkan nama file foto otomatis, misal: BCMU-1.jpg
+                const namaFileFoto = item.nama.replace(/\s+/g, '') + ".jpg";
+                const linkFoto = STORAGE_URL + namaFileFoto;
+
                 tbody.innerHTML += `
                     <tr class="row-data">
                         <td>${item.no}</td>
-                        <td class="nama-bangunan">${item.nama}</td>
+                        <td class="nama-bangunan">
+                            <div class="nama-container">
+                                <img src="${linkFoto}" 
+                                     class="img-bendung" 
+                                     onerror="this.src='https://via.placeholder.com/45?text=NO+IMG'" 
+                                     alt="Foto">
+                                <span>${item.nama}</span>
+                            </div>
+                        </td>
                         <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
                         <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
                         <td class="col-selisih">0.00</td>
@@ -111,7 +135,7 @@
             const selisihText = row.querySelector('.col-selisih').innerText;
             payload.push({
                 tanggal: tgl,
-                nama_bangunan: row.querySelector('.nama-bangunan').innerText,
+                nama_bangunan: row.querySelector('.nama-bangunan span').innerText, // Ambil teks dari span
                 kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
                 ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
                 selisih: parseFloat(selisihText) || 0,
@@ -119,7 +143,6 @@
             });
         });
 
-        // Tampilkan loading sederhana
         const btn = document.querySelector('.btn-save');
         btn.innerText = "PROSES SIMPAN...";
         btn.disabled = true;
@@ -137,7 +160,6 @@
         }
     }
 
-    // Panggil fungsi setelah semua script siap
     window.onload = renderTabel;
 </script>
 </body>
