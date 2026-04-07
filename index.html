@@ -7,28 +7,45 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; }
         h2 { text-align: center; color: #333; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th, td { border: 1px solid #000; padding: 10px; text-align: center; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; table-layout: fixed; } /* Paksa layout agar kolom konsisten */
+        th, td { border: 1px solid #000; padding: 12px 8px; text-align: center; font-size: 14px; overflow: hidden; }
         th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; }
-        .section-header { background-color: #d3d3d3 !important; font-weight: bold; font-style: italic; font-size: 14px; }
-        input { width: 85%; padding: 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        
+        .section-header { background-color: #d3d3d3 !important; font-weight: bold; font-style: italic; font-size: 15px; }
+        input { width: 90%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 14px; }
+        
         .status-cukup { background-color: #c6efce !important; color: #006100; font-weight: bold; }
         .status-kurang { background-color: #ffc7ce !important; color: #9c0006; font-weight: bold; }
+        
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-save { padding: 12px 25px; background: #3ecf8e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-save { padding: 12px 25px; background: #3ecf8e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save:hover { background: #2fb37a; }
         .btn-admin { padding: 10px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; }
 
-        /* CSS TAMBAHAN UNTUK FOTO */
-        .nama-container { display: flex; align-items: center; text-align: left; gap: 10px; }
+        /* PERBAIKAN DAN PERBESARAN FOTO */
+        .nama-container { 
+            display: flex; 
+            flex-direction: column; /* Foto di atas, teks di bawah agar lebih besar */
+            align-items: center; 
+            gap: 8px; 
+            padding: 5px 0;
+        }
         .img-bendung { 
-            width: 45px; 
-            height: 45px; 
+            width: 120px; /* Ukuran lebih besar */
+            height: 80px; 
             object-fit: cover; 
-            border-radius: 6px; 
-            border: 1px solid #ccc;
-            background-color: #eee;
+            border-radius: 8px; 
+            border: 2px solid #333;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        .nama-text {
+            font-weight: bold;
+            font-size: 13px;
+            color: #222;
+            line-height: 1.2;
         }
     </style>
 </head>
@@ -49,12 +66,11 @@
     <table>
         <thead>
             <tr>
-                <th width="5%">NO</th>
-                <th width="25%">NAMA BENDUNG</th>
-                <th width="15%">KEBUTUHAN (m³/s)</th>
-                <th width="15%">KETERSEDIAAN (m³/s)</th>
-                <th width="20%">SELISIH</th>
-                <th width="20%">STATUS</th>
+                <th width="50px">NO</th>
+                <th width="250px">NAMA BENDUNG</th> <th>KEBUTUHAN (m³/s)</th>
+                <th>KETERSEDIAAN (m³/s)</th>
+                <th>SELISIH</th>
+                <th width="150px">STATUS</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -66,15 +82,17 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // URL Storage Supabase (Sesuaikan nama bucket 'foto-bendung')
     const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/foto-bendung/`;
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
+    // Data Air dengan penamaan baru
     const dataAir = [
         { type: 'header', label: 'SALURAN INDUK CIMULU' },
-        ...Array.from({length: 10}, (_, i) => ({ no: i+1, nama: `cimulu - ${i+1}` })),
+        ...Array.from({length: 10}, (_, i) => ({ 
+            no: i+1, 
+            nama: `CIMULU BCMU.${i}` // Format: CIMULU BCMU.0, CIMULU BCMU.1, dst
+        })),
         { type: 'header', label: 'BENDUNG LAINNYA' },
         ...Array.from({length: 5}, (_, i) => ({ no: i+1, nama: `BDS - ${i+1}` })),
         { type: 'header', label: 'SALURAN LAIN' },
@@ -88,8 +106,8 @@
             if (item.type === 'header') {
                 tbody.innerHTML += `<tr class="section-header"><td colspan="6">${item.label}</td></tr>`;
             } else {
-                // Menghasilkan nama file foto otomatis, misal: BCMU-1.jpg
-                const namaFileFoto = item.nama.replace(/\s+/g, '') + ".jpg";
+                // Nama file di storage disesuaikan (tanpa spasi dan titik biasanya lebih aman)
+                const namaFileFoto = item.nama.replace(/\s+/g, '').replace(/\./g, '') + ".jpg";
                 const linkFoto = STORAGE_URL + namaFileFoto;
 
                 tbody.innerHTML += `
@@ -99,9 +117,9 @@
                             <div class="nama-container">
                                 <img src="${linkFoto}" 
                                      class="img-bendung" 
-                                     onerror="this.src='https://via.placeholder.com/45?text=NO+IMG'" 
+                                     onerror="this.src='https://via.placeholder.com/120x80?text=FOTO+BENDUNG'" 
                                      alt="Foto">
-                                <span>${item.nama}</span>
+                                <span class="nama-text">${item.no}. ${item.nama}</span>
                             </div>
                         </td>
                         <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
@@ -135,7 +153,7 @@
             const selisihText = row.querySelector('.col-selisih').innerText;
             payload.push({
                 tanggal: tgl,
-                nama_bangunan: row.querySelector('.nama-bangunan span').innerText, // Ambil teks dari span
+                nama_bangunan: row.querySelector('.nama-text').innerText,
                 kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
                 ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
                 selisih: parseFloat(selisihText) || 0,
