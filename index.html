@@ -3,47 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Monitoring Air Cimulu - 10 Titik</title>
+    <title>Laporan Monitoring Air Lengkap - PKL</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f0f2f5; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
-        h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; }
+        h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; letter-spacing: 1px; }
         
-        /* HEADER CONTROLS */
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px; background: #fff; border-radius: 8px; }
-        .btn-admin { padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
-        .btn-admin:hover { background: #1976D2; }
-
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-admin { padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 12px; text-align: center; font-size: 14px; }
-        th { background-color: #f8f9fa; }
+        th, td { border: 1px solid #000; padding: 10px; text-align: center; font-size: 13px; }
+        th { background-color: #f8f9fa; height: 50px; }
 
-        /* STYLE FOTO DI TABEL */
+        /* STYLE FOTO */
         .nama-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .img-bendung { 
-            width: 160px; 
-            height: 110px; 
-            object-fit: cover; 
-            border-radius: 8px; 
-            border: 2px solid #444;
-            cursor: pointer; 
-            transition: 0.3s;
+            width: 160px; height: 100px; 
+            object-fit: cover; border-radius: 8px; border: 2px solid #333;
+            cursor: pointer; transition: 0.3s;
         }
-        .img-bendung:hover { transform: scale(1.08); border-color: #2196F3; }
+        .img-bendung:hover { transform: scale(1.05); }
 
-        /* MODAL ZOOM GAMBAR */
+        /* MODAL ZOOM */
         #imageModal {
-            display: none; position: fixed; z-index: 999; left: 0; top: 0; 
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
             width: 100%; height: 100%; background: rgba(0,0,0,0.9);
             justify-content: center; align-items: center; flex-direction: column;
         }
         #modalImg { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 10px; }
-        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 50px; cursor: pointer; }
 
-        /* LAIN-LAIN */
-        input { width: 85%; padding: 8px; text-align: center; border-radius: 4px; border: 1px solid #ccc; }
+        input { width: 85%; padding: 6px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
         .btn-save { padding: 15px; background: #3ecf8e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; font-size: 16px; }
+        
         .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; }
         .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; }
     </style>
@@ -51,17 +44,16 @@
 <body>
 
 <div id="imageModal">
-    <span class="close-btn" onclick="tutupModal()">&times;</span>
+    <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer;" onclick="tutupModal()">&times;</span>
     <img id="modalImg">
-    <p id="caption" style="color: white; margin-top: 15px; font-size: 20px; font-weight: bold;"></p>
+    <p id="caption" style="color: white; margin-top: 15px; font-size: 18px;"></p>
 </div>
 
 <div class="container">
-    <h2>Laporan Monitoring Air (10 Nomor)</h2>
+    <h2>Input Kebutuhan dan Ketersediaan Air</h2>
     
     <div class="controls">
         <a href="admin.html" class="btn-admin">← LIHAT REKAP ADMIN</a>
-        
         <div>
             <label>Tanggal: </label>
             <input type="date" id="tgl_input" style="width: auto;">
@@ -71,17 +63,18 @@
     <table>
         <thead>
             <tr>
-                <th width="8%">NO</th>
-                <th width="42%">NAMA BENDUNG & VISUAL</th>
-                <th width="15%">BUTUH</th>
-                <th width="15%">SEDIA</th>
-                <th width="20%">STATUS</th>
+                <th width="5%">NO</th>
+                <th width="22%">NAMA BENDUNG & FOTO</th>
+                <th width="15%">KEBUTUHAN AIR (m³/s)</th>
+                <th width="15%">KETERSEDIAAN AIR (m³/s)</th>
+                <th width="18%">JUMLAH KEKURANGAN/ KELEBIHAN (DEBIT)</th>
+                <th width="15%">KETERANGAN</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
     </table>
 
-    <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA KE DATABASE</button>
+    <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA</button>
 </div>
 
 <script>
@@ -92,14 +85,19 @@
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
+    // DAFTAR NAMA BENDUNG SESUAI PERMINTAAN
+    const daftarBendung = [
+        "CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", 
+        "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"
+    ];
+
     function renderTabel() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
         
-        for (let i = 0; i < 10; i++) {
-            const namaBendung = `CIMULU BCMU.${i}`;
-            const namaFile = `cimulubcmu${i}.jpg`; 
-            const fullUrl = STORAGE_URL + namaFile;
+        daftarBendung.forEach((nama, i) => {
+            const fileName = nama.toLowerCase().replace(/\s+/g, '') + ".jpg";
+            const fullUrl = STORAGE_URL + fileName;
 
             tbody.innerHTML += `
                 <tr class="row-data">
@@ -107,25 +105,31 @@
                     <td>
                         <div class="nama-container">
                             <img src="${fullUrl}" class="img-bendung" 
-                                 onclick="zoomGambar('${fullUrl}', '${i+1}. ${namaBendung}')"
-                                 onerror="this.src='https://via.placeholder.com/160x110?text=Foto+Belum+Ada'">
-                            <span class="nama-text" style="font-weight:bold;">${i+1}. ${namaBendung}</span>
+                                 onclick="zoomGambar('${fullUrl}', 'Bendung ${nama}')"
+                                 onerror="this.src='https://via.placeholder.com/160x100?text=No+Photo'">
+                            <span class="nama-text" style="font-weight:bold;">${nama}</span>
                         </div>
                     </td>
                     <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
                     <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
+                    <td class="col-selisih">0.00</td>
                     <td class="col-status status-cukup">CUKUP</td>
                 </tr>`;
-        }
+        });
     }
 
     function hitung(el) {
         const row = el.closest('tr');
         const butuh = parseFloat(row.querySelector('.inp-butuh').value) || 0;
         const sedia = parseFloat(row.querySelector('.inp-sedia').value) || 0;
+        const selisih = (sedia - butuh).toFixed(2);
+        
+        const colSelisih = row.querySelector('.col-selisih');
         const colStatus = row.querySelector('.col-status');
         
-        if (sedia < butuh) {
+        colSelisih.innerText = (selisih >= 0 ? "+" : "") + selisih;
+        
+        if (parseFloat(selisih) < 0) {
             colStatus.innerText = "KURANG AIR";
             colStatus.className = "col-status status-kurang";
         } else {
@@ -135,49 +139,38 @@
     }
 
     function zoomGambar(url, txt) {
-        const modal = document.getElementById('imageModal');
-        modal.style.display = "flex";
+        document.getElementById('imageModal').style.display = "flex";
         document.getElementById('modalImg').src = url;
         document.getElementById('caption').innerText = txt;
     }
 
-    function tutupModal() {
-        document.getElementById('imageModal').style.display = "none";
-    }
+    function tutupModal() { document.getElementById('imageModal').style.display = "none"; }
 
     async function simpanKeSupabase() {
         const tgl = document.getElementById('tgl_input').value;
         const rows = document.querySelectorAll('.row-data');
-        
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
-            nama_bangunan: row.querySelector('.nama-text').innerText,
+            nama_bendung: row.querySelector('.nama-text').innerText,
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
-            status: row.querySelector('.col-status').innerText
+            selisih: parseFloat(row.querySelector('.col-selisih').innerText) || 0,
+            keterangan: row.querySelector('.col-status').innerText
         }));
 
         const btn = document.querySelector('.btn-save');
-        btn.innerText = "SEDANG MENGIRIM DATA...";
+        btn.innerText = "PROSES SIMPAN...";
         btn.disabled = true;
 
         const { error } = await _supabase.from('laporan_air').insert(payload);
-        
-        btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
+        btn.innerText = "SIMPAN SEMUA DATA";
         btn.disabled = false;
 
-        if (error) alert("Gagal Simpan: " + error.message);
-        else alert("Berhasil! 10 Data Laporan sudah masuk ke Supabase.");
+        if (error) alert("Error: " + error.message);
+        else alert("Data 10 Bendung Berhasil Disimpan!");
     }
 
     window.onload = renderTabel;
-
-    // Tutup modal kalau klik area hitam
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('imageModal')) {
-            tutupModal();
-        }
-    }
 </script>
 </body>
 </html>
