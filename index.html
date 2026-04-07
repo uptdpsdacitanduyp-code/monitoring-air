@@ -3,175 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Monitoring Air Lengkap - PKL</title>
+    <title>Laporan Monitoring Air Cimulu - 10 Titik</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; }
-        h2 { text-align: center; color: #333; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 12px 8px; text-align: center; font-size: 14px; }
-        th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f0f2f5; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
+        h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; }
         
-        .section-header { background-color: #d3d3d3 !important; font-weight: bold; font-style: italic; font-size: 15px; }
-        input { width: 90%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
-        
-        .status-cukup { background-color: #c6efce !important; color: #006100; font-weight: bold; }
-        .status-kurang { background-color: #ffc7ce !important; color: #9c0006; font-weight: bold; }
-        
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-save { padding: 12px 25px; background: #3ecf8e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-admin { padding: 10px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 12px; text-align: center; font-size: 14px; }
+        th { background-color: #f8f9fa; }
 
-        /* STYLE GAMBAR & HOVER */
-        .nama-container { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 5px 0; }
+        /* STYLE FOTO DI TABEL */
+        .nama-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .img-bendung { 
-            width: 140px; /* Ukuran di tabel diperbesar sedikit */
-            height: 90px; 
+            width: 150px; /* Ukuran Lebar */
+            height: 100px; /* Ukuran Tinggi */
             object-fit: cover; 
             border-radius: 8px; 
-            border: 2px solid #333;
-            cursor: pointer; /* Kursor jadi tangan tanda bisa diklik */
-            transition: transform 0.2s;
+            border: 2px solid #444;
+            cursor: pointer; 
+            transition: 0.3s;
         }
         .img-bendung:hover { transform: scale(1.05); border-color: #2196F3; }
 
-        /* STYLE MODAL (POPUP GAMBAR) */
+        /* MODAL ZOOM GAMBAR */
         #imageModal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; top: 0; 
-            width: 100%; height: 100%; 
-            background-color: rgba(0,0,0,0.9); 
-            justify-content: center; 
-            align-items: center;
+            display: none; position: fixed; z-index: 999; left: 0; top: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            justify-content: center; align-items: center; flex-direction: column;
         }
-        #modalImg {
-            max-width: 90%; 
-            max-height: 85%; 
-            border: 5px solid white; 
-            border-radius: 10px;
-        }
-        .close-modal {
-            position: absolute; 
-            top: 20px; right: 35px; 
-            color: #f1f1f1; 
-            font-size: 40px; 
-            font-weight: bold; 
-            cursor: pointer;
-        }
+        #modalImg { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 10px; }
+        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+
+        /* LAIN-LAIN */
+        input { width: 80%; padding: 6px; text-align: center; border-radius: 4px; border: 1px solid #ccc; }
+        .btn-save { padding: 15px 30px; background: #3ecf8e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; }
+        .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; }
+        .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="imageModal">
-    <span class="close-modal" onclick="tutupModal()">&times;</span>
+    <span class="close-btn" onclick="tutupModal()">&times;</span>
     <img id="modalImg">
-    <div id="caption" style="color: white; margin-top: 15px; font-weight: bold;"></div>
+    <p id="caption" style="color: white; margin-top: 10px; font-size: 18px;"></p>
 </div>
 
 <div class="container">
-    <h2>Input Kebutuhan dan Ketersediaan Air</h2>
+    <h2>Laporan Monitoring Air (10 Nomor)</h2>
     
-    <div class="controls">
-        <a href="admin.html" class="btn-admin">Lihat Rekap Admin →</a>
-        <div>
-            <label>Tanggal: </label>
-            <input type="date" id="tgl_input" style="width: auto; margin-right: 10px;">
-            <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA</button>
-        </div>
+    <div style="margin-bottom: 15px; text-align: right;">
+        <label>Pilih Tanggal: </label>
+        <input type="date" id="tgl_input" style="width: auto;">
     </div>
-    
+
     <table>
         <thead>
             <tr>
-                <th width="50px">NO</th>
-                <th width="280px">NAMA BENDUNG</th>
-                <th>KEBUTUHAN (m³/s)</th>
-                <th>KETERSEDIAAN (m³/s)</th>
-                <th>SELISIH</th>
-                <th width="150px">STATUS</th>
+                <th width="10%">NO</th>
+                <th width="40%">NAMA BENDUNG & FOTO</th>
+                <th width="15%">BUTUH</th>
+                <th width="15%">SEDIA</th>
+                <th width="20%">STATUS</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
     </table>
+
+    <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA</button>
 </div>
 
 <script>
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
-    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/foto-bendung/`;
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
-    const dataAir = [
-        { type: 'header', label: 'SALURAN INDUK CIMULU' },
-        ...Array.from({length: 10}, (_, i) => ({ 
-            no: i+1, 
-            nama: `CIMULU BCMU.${i}` 
-        })),
-        { type: 'header', label: 'BENDUNG LAINNYA' },
-        ...Array.from({length: 5}, (_, i) => ({ no: i+1, nama: `BDS - ${i+1}` })),
-        { type: 'header', label: 'SALURAN LAIN' },
-        ...Array.from({length: 4}, (_, i) => ({ no: i+1, nama: `BCH - ${i+1}` }))
-    ];
-
+    // Render 10 Nomor Saja
     function renderTabel() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
-        dataAir.forEach(item => {
-            if (item.type === 'header') {
-                tbody.innerHTML += `<tr class="section-header"><td colspan="6">${item.label}</td></tr>`;
-            } else {
-                const namaFileFoto = item.nama.replace(/\s+/g, '').replace(/\./g, '') + ".jpg";
-                const linkFoto = STORAGE_URL + namaFileFoto;
-                const labelNama = `${item.no}. ${item.nama}`;
-
-                tbody.innerHTML += `
-                    <tr class="row-data">
-                        <td>${item.no}</td>
-                        <td class="nama-bangunan">
-                            <div class="nama-container">
-                                <img src="${linkFoto}" 
-                                     class="img-bendung" 
-                                     onclick="perbesarGambar('${linkFoto}', '${labelNama}')"
-                                     onerror="this.src='https://via.placeholder.com/140x90?text=FOTO+BENDUNG'" 
-                                     alt="Foto">
-                                <span class="nama-text">${labelNama}</span>
-                            </div>
-                        </td>
-                        <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
-                        <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
-                        <td class="col-selisih">0.00</td>
-                        <td class="col-status status-cukup">CUKUP</td>
-                    </tr>`;
-            }
-        });
-    }
-
-    // FUNGSI UNTUK MODAL GAMBAR
-    function perbesarGambar(url, nama) {
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImg');
-        const caption = document.getElementById('caption');
         
-        modal.style.display = "flex";
-        modalImg.src = url;
-        caption.innerText = nama;
-    }
+        for (let i = 0; i < 10; i++) {
+            const namaBendung = `CIMULU BCMU.${i}`;
+            const namaFile = `cimulubcmu${i}.jpg`; // Pastikan nama file di storage tanpa spasi/titik
+            const fullUrl = STORAGE_URL + namaFile;
 
-    function tutupModal() {
-        document.getElementById('imageModal').style.display = "none";
-    }
-
-    // Klik di luar gambar untuk menutup modal
-    window.onclick = function(event) {
-        const modal = document.getElementById('imageModal');
-        if (event.target == modal) {
-            modal.style.display = "none";
+            tbody.innerHTML += `
+                <tr class="row-data">
+                    <td>${i + 1}</td>
+                    <td>
+                        <div class="nama-container">
+                            <img src="${fullUrl}" class="img-bendung" 
+                                 onclick="zoomGambar('${fullUrl}', '${i+1}. ${namaBendung}')"
+                                 onerror="this.src='https://via.placeholder.com/150x100?text=Tanpa+Foto'">
+                            <span class="nama-text">${i+1}. ${namaBendung}</span>
+                        </div>
+                    </td>
+                    <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
+                    <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
+                    <td class="col-status status-cukup">CUKUP</td>
+                </tr>`;
         }
     }
 
@@ -179,34 +115,40 @@
         const row = el.closest('tr');
         const butuh = parseFloat(row.querySelector('.inp-butuh').value) || 0;
         const sedia = parseFloat(row.querySelector('.inp-sedia').value) || 0;
-        const selisih = (sedia - butuh).toFixed(2);
-        const isCukup = parseFloat(selisih) >= 0;
-        
-        row.querySelector('.col-selisih').innerText = (isCukup ? '+' : '') + selisih;
         const colStatus = row.querySelector('.col-status');
-        colStatus.innerText = isCukup ? 'CUKUP' : 'KURANG AIR';
-        colStatus.className = `col-status ${isCukup ? 'status-cukup' : 'status-kurang'}`;
+        
+        if (sedia < butuh) {
+            colStatus.innerText = "KURANG AIR";
+            colStatus.className = "col-status status-kurang";
+        } else {
+            colStatus.innerText = "CUKUP";
+            colStatus.className = "col-status status-cukup";
+        }
+    }
+
+    function zoomGambar(url, txt) {
+        document.getElementById('imageModal').style.display = "flex";
+        document.getElementById('modalImg').src = url;
+        document.getElementById('caption').innerText = txt;
+    }
+
+    function tutupModal() {
+        document.getElementById('imageModal').style.display = "none";
     }
 
     async function simpanKeSupabase() {
         const tgl = document.getElementById('tgl_input').value;
         const rows = document.querySelectorAll('.row-data');
-        const payload = [];
-
-        rows.forEach(row => {
-            const selisihText = row.querySelector('.col-selisih').innerText;
-            payload.push({
-                tanggal: tgl,
-                nama_bangunan: row.querySelector('.nama-text').innerText,
-                kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
-                ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
-                selisih: parseFloat(selisihText) || 0,
-                status: row.querySelector('.col-status').innerText
-            });
-        });
+        const payload = Array.from(rows).map(row => ({
+            tanggal: tgl,
+            nama_bangunan: row.querySelector('.nama-text').innerText,
+            kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
+            ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
+            status: row.querySelector('.col-status').innerText
+        }));
 
         const btn = document.querySelector('.btn-save');
-        btn.innerText = "PROSES SIMPAN...";
+        btn.innerText = "SEDANG MENYIMPAN...";
         btn.disabled = true;
 
         const { error } = await _supabase.from('laporan_air').insert(payload);
@@ -214,12 +156,8 @@
         btn.innerText = "SIMPAN SEMUA DATA";
         btn.disabled = false;
 
-        if (error) {
-            alert("Gagal: " + error.message);
-            console.error(error);
-        } else {
-            alert("Berhasil simpan semua data!");
-        }
+        if (error) alert("Error: " + error.message);
+        else alert("10 Data Berhasil Disimpan!");
     }
 
     window.onload = renderTabel;
