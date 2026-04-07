@@ -3,219 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Rekap - Cai Tepi Sawah</title>
+    <title>Panel Admin - Rekapitulasi Neraca Air</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f0f2f5; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
+        .admin-container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        /* HEADER STYLE - Disamakan dengan Index */
-        .header-uptd { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 30px; border-bottom: 3px solid #2196F3; padding-bottom: 20px; }
-        .logo-uptd-img { width: 90px; height: 90px; object-fit: contain; }
-        .titles-container { display: flex; flex-direction: column; }
-        .main-title { margin: 0; color: #1a237e; text-transform: uppercase; font-size: 32px; font-weight: 800; line-height: 1.1; }
-        .sub-title { margin: 0; color: #444; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3498db; padding-bottom: 15px; margin-bottom: 20px; }
+        h1 { color: #2c3e50; margin: 0; font-size: 24px; }
         
-        /* CONTROLS & FILTER */
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 8px; flex-wrap: wrap; gap: 10px; }
-        .filter-group { display: flex; align-items: center; gap: 10px; }
+        /* TOOLS */
+        .admin-tools { display: flex; gap: 15px; align-items: center; background: #eef2f7; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .search-box { flex-grow: 1; display: flex; gap: 10px; align-items: center; }
+        input[type="date"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-blue { background: #3498db; color: white; }
+        .btn-green { background: #27ae60; color: white; }
+        .btn-red { background: #e74c3c; color: white; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
         
-        /* TABLE STYLE */
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; background: white; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; word-wrap: break-word; }
-        th { background-color: #2196F3; color: white; height: 50px; text-transform: uppercase; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        tr:hover { background-color: #f1f8ff; }
+        /* TABLE */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th { background-color: #34495e; color: white; padding: 15px; text-align: center; font-size: 13px; }
+        td { border-bottom: 1px solid #eee; padding: 15px; text-align: center; font-size: 14px; }
+        tr:hover { background-color: #f8fbff; }
 
-        /* BUTTONS */
-        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; font-size: 13px; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; }
-        .btn-blue { background: #2196F3; color: white; }
-        .btn-blue:hover { background: #1565C0; }
-        .btn-green { background: #3ecf8e; color: white; }
-        .btn-green:hover { background: #2eb875; }
-        .btn-red { background: #f44336; color: white; }
-        .btn-red:hover { background: #d32f2f; }
-        .btn-outline { background: white; border: 1px solid #2196F3; color: #2196F3; }
-        .btn-outline:hover { background: #e3f2fd; }
-        .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 4px; }
-
-        /* STATUS TAGS */
-        .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block; }
-        .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block; }
-
-        @media print {
-            .controls, .btn, .col-aksi { display: none !important; }
-            body { margin: 0; padding: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
-            th { background-color: #ddd !important; color: black !important; border: 1px solid #000 !important; }
-        }
-        /* CSS baru untuk foto di tabel admin */
-.admin-nama-flex { display: flex; align-items: center; gap: 8px; justify-content: flex-start; text-align: left; }
-.img-admin-mini { 
-    width: 60px; height: 40px; 
-    object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
-    cursor: pointer; transition: 0.2s;
-}
-.img-admin-mini:hover { transform: scale(1.1); border-color: #2196F3; }
-
-/* Tambahan CSS agar cetakan PDF tidak berantakan */
-@media print {
-    .img-admin-mini { border: none !important; -webkit-print-color-adjust: exact; }
-}
+        .status-badge { background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .loading { text-align: center; padding: 40px; font-size: 18px; color: #7f8c8d; }
+        
+        .btn-action-view { background: #8e44ad; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; }
+        .btn-action-delete { background: #fdf0ef; color: #e74c3c; padding: 6px 12px; border-radius: 4px; font-size: 12px; border: 1px solid #facccc; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-uptd">
-        <img src="img/g2.png" alt="Logo UPTD" class="logo-uptd-img" onerror="this.src='https://via.placeholder.com/90?text=LOGO+UPTD'">
-        <div class="titles-container">
-            <h1 class="main-title">CAI TEPI SAWAH</h1>
-            <h2 class="sub-title">ADMIN REKAP DATA - UPTD PSDA WS CITANDUY</h2>
-        </div>
-    </div>
-    
-    <div class="controls">
-        <div class="filter-group">
-            <a href="index.html" class="btn btn-outline">← KEMBALI KE INPUT</a>
-            <button class="btn btn-blue" onclick="window.print()">🖨️ CETAK PDF</button>
-        </div>
-        
-        <div class="filter-group">
-            <label style="font-weight:bold;">FILTER TANGGAL: </label>
-            <input type="date" id="filterTgl" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
-            <button class="btn btn-green" onclick="muatData()">CARI DATA</button>
-            <button class="btn btn-outline" onclick="resetFilter()">SEMUA</button>
-        </div>
-
-        <button class="btn btn-red" onclick="hapusSemuaData()">⚠️ HAPUS SEMUA REKAP</button>
+<div class="admin-container">
+    <div class="header">
+        <h1>📊 Data Center Neraca Air</h1>
+        <a href="index.html" class="btn btn-green">➕ Buat Laporan Baru</a>
     </div>
 
-    <table>
+    <div class="admin-tools">
+        <div class="search-box">
+            <label><strong>Filter Tanggal:</strong></label>
+            <input type="date" id="filterTgl">
+            <button class="btn btn-blue" onclick="muatData()">Cari Data</button>
+            <button class="btn btn-blue" style="background:#7f8c8d" onclick="resetFilter()">Semua Data</button>
+        </div>
+        <button class="btn btn-blue" onclick="muatData()">🔄 Refresh</button>
+    </div>
+
+    <div id="loadingStatus" class="loading">Menghubungkan ke database...</div>
+
+    <table id="tabelRekap" style="display:none;">
         <thead>
             <tr>
-                <th width="70px">TANGGAL</th>
-                <th width="150px">NAMA BANGUNAN</th>
-                <th>KEBUTUHAN (m³/s)</th>
-                <th>SEDIA (m³/s)</th>
-                <th>+/- SELISIH</th>
-                <th>LUAS (Ha)</th>
-                <th>OLAH TANAH</th>
-                <th>TUMBUH</th>
-                <th>PANEN</th>
-                <th width="100px">KET</th>
-                <th width="70px" class="col-aksi">AKSI</th>
+                <th width="5%">No</th>
+                <th width="25%">Tanggal Update</th>
+                <th width="30%">Nama Daerah Irigasi</th>
+                <th width="15%">Status</th>
+                <th width="25%">Opsi Kelola</th>
             </tr>
         </thead>
-        <tbody id="adminBody">
-            <tr><td colspan="11">Memuat data...</td></tr>
-        </tbody>
+        <tbody id="isiTabel"></tbody>
     </table>
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
-    
+    const SUPABASE_URL = 'https://wcypnoofitfvqoexjhkg.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjeXBub29maXRmdnFvZXhqaGtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NTQ1ODEsImV4cCI6MjA5MTAzMDU4MX0.PC1mMJM39ECO9gstUB5R0UsHOZuZzeea4TvbDLg2lBU';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function muatData() {
-        const filter = document.getElementById('filterTgl').value;
-        const tbody = document.getElementById('adminBody');
-        
-      // Ganti bagian tbody.innerHTML lama dengan ini:
+        const loading = document.getElementById('loadingStatus');
+        const tabel = document.getElementById('tabelRekap');
+        const tbody = document.getElementById('isiTabel');
+        const filterTgl = document.getElementById('filterTgl').value;
 
-tbody.innerHTML = data.map(item => {
-    const statusClass = (item.keterangan === 'CUKUP') ? 'status-cukup' : 'status-kurang';
-    
-    // 1. Ambil nama bendung murni (tanpa embel-embel foto)
-    const namaMurni = item.bendungan_dan_foto || item.nama_bendung || item.nama_bangunan || '-';
-    
-    // 2. Buat URL foto murni berdasarkan nama bendung (huruf kecil, tanpa spasi + .jpeg)
-    const namaFile = namaMurni.toLowerCase().replace(/\s+/g, '') + ".jpeg";
-    const urlFotoMurni = "img/" + namaFile; // Mengambil dari folder lokal 'img/'
+        loading.style.display = 'block';
+        loading.innerText = "⏳ Sedang mengambil data...";
+        tabel.style.display = 'none';
+        tbody.innerHTML = '';
 
-    return `
-        <tr>
-            <td>${formatTanggal(item.tanggal)}</td>
-            
-            <td>
-                <div class="admin-nama-flex">
-                    <img src="${urlFotoMurni}" class="img-admin-mini" 
-                         onclick="zoomGambar('${urlFotoMurni}', 'Bendung ${namaMurni}')"
-                         onerror="this.src='https://via.placeholder.com/60x40?text=No+Photo'">
-                    <strong>${namaMurni}</strong>
-                </div>
-            </td>
-            
-            <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-            <td style="font-weight:bold; color:${item.selisih < 0 ? '#9c0006' : '#006100'}">
-                ${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}
-            </td>
-            <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
-            <td><span class="${statusClass}">${item.keterangan || '-'}</span></td>
-            <td class="col-aksi">
-                <button class="btn btn-red btn-sm" onclick="hapusData(${item.id})">Hapus</button>
-            </td>
-        </tr>
-    `;
-}).join('');
-        tbody.innerHTML = data.map(item => {
-            const isKurang = (item.keterangan === 'KURANG AIR' || item.selisih < 0);
-            return `
-                <tr>
-                    <td>${formatTanggal(item.tanggal)}</td>
-                    <td style="text-align:left; padding-left:10px;"><strong>${item.bendungan_dan_foto || '-'}</strong></td>
-                    <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-                    <td style="font-weight:bold; color:${item.selisih < 0 ? 'red' : 'green'}">
-                        ${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}
-                    </td>
-                    <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
-                    <td>
-                        <span class="${isKurang ? 'status-kurang' : 'status-cukup'}">
-                            ${item.keterangan || (isKurang ? 'KURANG AIR' : 'CUKUP')}
-                        </span>
-                    </td>
-                    <td class="col-aksi">
-                        <button class="btn btn-red btn-sm" onclick="hapusData(${item.id})">Hapus</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        try {
+            let query = _supabase.from('db_irigasi').select('*').order('tgl_update', { ascending: false });
+
+            // Jika filter tanggal diisi
+            if (filterTgl) {
+                // Filter berdasarkan awal dan akhir hari tersebut
+                query = query.gte('tgl_update', `${filterTgl}T00:00:00`)
+                             .lte('tgl_update', `${filterTgl}T23:59:59`);
+            }
+
+            const { data, error } = await query;
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                data.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    const tglFormated = new Date(row.tgl_update).toLocaleDateString('id-ID', {
+                        day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+                    });
+
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${tglFormated}</td>
+                        <td><strong>${row.nama_di || 'TIDAK ADA NAMA'}</strong></td>
+                        <td><span class="status-badge">✅ Tersimpan</span></td>
+                        <td>
+                            <button class="btn btn-action-view" onclick="lihatDetail('${row.id}')">👁️ Buka</button>
+                            <button class="btn-action-delete" onclick="hapusData('${row.id}')">🗑️ Hapus</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                tabel.style.display = 'table';
+                loading.style.display = 'none';
+            } else {
+                loading.innerText = "📭 Tidak ada data ditemukan.";
+            }
+        } catch (err) {
+            console.error(err);
+            loading.innerText = "❌ Gagal memuat data. Periksa koneksi atau nama tabel.";
+        }
+    }
+
+    async function lihatDetail(id) {
+        const { data, error } = await _supabase
+            .from('db_irigasi')
+            .select('data_tabel_html, nama_di')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            alert("Gagal membuka laporan: " + error.message);
+            return;
+        }
+
+        if (data) {
+            const win = window.open("", "_blank");
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Laporan - ${data.nama_di}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; background: #f9f9f9; }
+                        .paper { width: 210mm; min-height: 297mm; padding: 20mm; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                        
+                        /* Style Tabel dari Laporan */
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+                        th, td { border: 1px solid black !important; padding: 6px; text-align: center; }
+                        .no-border, .no-border td { border: none !important; text-align: left; }
+                        
+                        .btn-print-area { text-align: center; margin-top: 30px; }
+                        .btn-p { padding: 12px 25px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight:bold; }
+                        
+                        @media print {
+                            body { background: white; padding: 0; }
+                            .paper { box-shadow: none; margin: 0; width: 100%; padding: 10mm; }
+                            .btn-print-area { display: none !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="paper">
+                        <div id="content">${data.data_tabel_html}</div>
+                        <div class="btn-print-area">
+                            <button class="btn-p" onclick="window.print()">🖨️ CETAK KE PDF / PRINTER</button>
+                            <button class="btn-p" style="background:#e74c3c" onclick="window.close()">❌ TUTUP</button>
+                        </div>
+                    </div>
+                    <script>
+                        // Matikan fungsi edit agar data permanen saat dilihat
+                        document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                            el.setAttribute('contenteditable', 'false');
+                            el.style.outline = 'none';
+                        });
+                    <\/script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        }
     }
 
     async function hapusData(id) {
-        if (confirm("Hapus data baris ini?")) {
-            const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
-            if (error) alert("Gagal menghapus: " + error.message);
-            else muatData();
-        }
-    }
-
-    async function hapusSemuaData() {
-        const password = prompt("PERINGATAN: Ini akan menghapus seluruh database! Ketik 'KONFIRMASI' untuk melanjutkan:");
-        if (password === "KONFIRMASI") {
-            const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
-            if (error) alert("Gagal: " + error.message);
-            else {
-                alert("Database berhasil dikosongkan.");
+        if(confirm("Apakah Anda yakin ingin menghapus data ini secara permanen?")) {
+            const { error } = await _supabase.from('db_irigasi').delete().eq('id', id);
+            if (error) {
+                alert("Gagal menghapus: " + error.message);
+            } else {
                 muatData();
             }
         }
-    }
-
-    function formatTanggal(tgl) {
-        if(!tgl) return "-";
-        const d = new Date(tgl);
-        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' });
     }
 
     function resetFilter() {
