@@ -3,30 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Rekap Data CAI TEPI SAWAH</title>
+    <title>Admin - Rekap Data Air & Lahan</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
+        h2 { color: #333; text-align: center; text-transform: uppercase; }
         
-        /* HEADER REKAP */
-        .header-admin { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 30px; border-bottom: 3px solid #2196F3; padding-bottom: 20px; }
-        .logo-admin { width: 80px; height: 80px; object-fit: contain; }
-        .title-admin { display: flex; flex-direction: column; }
-        .title-admin h2 { margin: 0; color: #1a237e; text-transform: uppercase; font-size: 24px; }
-        .title-admin p { margin: 0; color: #444; font-weight: bold; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 10px; text-align: center; font-size: 11px; word-wrap: break-word; }
-        th { background: #2196F3; color: white; text-transform: uppercase; height: 50px; }
-        tr:nth-child(even) { background-color: #f2f7ff; }
+        th, td { border: 1px solid #000; padding: 10px; text-align: center; font-size: 12px; word-wrap: break-word; }
+        th { background: #333; color: white; text-transform: uppercase; height: 60px; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
         
-        .filter-box { margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .filter-box { margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
         
-        .status-cukup { color: #006100; font-weight: bold; background: #c6efce; padding: 3px 6px; border-radius: 4px; }
-        .status-kurang { color: #9c0006; font-weight: bold; background: #ffc7ce; padding: 3px 6px; border-radius: 4px; }
+        /* Warna Status */
+        .status-cukup { color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 4px; border-radius: 4px; display: inline-block; }
+        .status-kurang { color: #c62828; font-weight: bold; background: #ffebee; padding: 4px; border-radius: 4px; display: inline-block; }
         
-        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; font-size: 13px; transition: 0.3s; }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; font-size: 13px; transition: 0.3s; }
         .btn-blue { background: #2196F3; color: white; }
         .btn-green { background: #3ecf8e; color: white; }
         .btn-red { background: #f44336; color: white; }
@@ -34,52 +29,45 @@
         .btn-sm { padding: 5px 8px; font-size: 10px; }
 
         @media print {
-            .filter-box, .btn, a, .col-aksi, .nav-buttons { display: none !important; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            .filter-box, .btn, a, .col-aksi { display: none !important; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
             body { background: white; padding: 0; }
-            th { background: #2196F3 !important; color: white !important; -webkit-print-color-adjust: exact; }
-            .header-admin { border-bottom: 2px solid #000; }
+            th { background: #eee !important; color: black !important; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-admin">
-        <img src="img/logo-uptd.png" alt="Logo UPTD" class="logo-admin" onerror="this.src='https://via.placeholder.com/80?text=PSDA'">
-        <div class="title-admin">
-            <h2>REKAPITULASI DATA CAI TEPI SAWAH</h2>
-            
-        </div>
-    </div>
+    <h2>Halaman Admin - Rekap Data Harian</h2>
     
-    <div class="nav-buttons" style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
-        <a href="index.html" class="btn btn-outline">← KEMBALI KE INPUT</a>
-        <button class="btn btn-blue" onclick="window.print()">CETAK LAPORAN (PDF)</button>
-        <button class="btn btn-red" onclick="hapusSemuaData()">KOSONGKAN REKAP</button>
+    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+        <a href="index.html" class="btn btn-outline">← Kembali ke Form Input</a>
+        <button class="btn btn-blue" onclick="window.print()">Cetak Laporan (PDF)</button>
+        <button class="btn btn-red" onclick="hapusSemuaData()">Hapus Semua Rekap</button>
     </div>
 
     <div class="filter-box">
-        <label style="font-weight: bold;">Filter Tanggal Laporan: </label>
-        <input type="date" id="filterTgl" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-        <button class="btn btn-green" onclick="muatData()">CARI DATA</button>
-        <button class="btn btn-outline" onclick="resetFilter()">RESET</button>
+        <label>Filter Tanggal: </label>
+        <input type="date" id="filterTgl">
+        <button class="btn btn-green" onclick="muatData()">Cari Data</button>
+        <button class="btn btn-outline" onclick="resetFilter()">Tampilkan Semua</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th width="70px">TANGGAL</th>
-                <th width="140px">NAMA BANGUNAN</th>
-                <th>KEBUTUHAN (m³/s)</th>
-                <th>SEDIA (m³/s)</th>
-                <th>+/- DEBIT</th>
-                <th>LUAS (HA)</th>
-                <th>OLAH TANAH</th>
-                <th>TUMBUH</th>
-                <th>PANEN</th>
-                <th width="90px">KET</th>
-                <th width="60px" class="col-aksi">AKSI</th>
+                <th width="80px">Tanggal</th>
+                <th width="150px">Nama Bangunan</th>
+                <th>Kebutuhan Air (m³/s)</th>
+                <th>Ketersediaan Air (m³/s)</th>
+                <th>Kekurangan/ Kelebihan</th>
+                <th>Luas Layanan (Ha)</th>
+                <th>Pengolahan Tanah</th>
+                <th>Pertumbuhan</th>
+                <th>Panen</th>
+                <th width="100px">Keterangan</th>
+                <th width="70px" class="col-aksi">Aksi</th>
             </tr>
         </thead>
         <tbody id="adminBody">
@@ -91,6 +79,7 @@
 <script>
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function muatData() {
@@ -99,8 +88,7 @@
         
         tbody.innerHTML = `<tr><td colspan="11">Sedang mengambil data...</td></tr>`;
 
-        // Mengambil data urut berdasarkan tanggal terbaru
-        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false });
+        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false }).order('id', { ascending: true });
 
         if (filter) {
             query = query.eq('tanggal', filter);
@@ -115,36 +103,35 @@
         }
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11">Tidak ada data untuk tanggal ini.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11">Data belum tersedia atau tidak ditemukan.</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = data.map(item => {
-            const statusClass = (item.keterangan === 'CUKUP') ? 'status-cukup' : 'status-kurang';
-            return `
-                <tr>
-                    <td>${formatTanggal(item.tanggal)}</td>
-                    <td><strong>${item.bendungan_dan_foto || item.nama_bendung || '-'}</strong></td>
-                    <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-                    <td style="font-weight:bold; color:${item.selisih < 0 ? '#9c0006' : '#006100'}">
-                        ${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}
-                    </td>
-                    <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
-                    <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
-                    <td><span class="${statusClass}">${item.keterangan || '-'}</span></td>
-                    <td class="col-aksi">
-                        <button class="btn btn-red btn-sm" onclick="hapusData(${item.id})">Hapus</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        tbody.innerHTML = data.map(item => `
+            <tr>
+                <td>${formatTanggal(item.tanggal)}</td>
+                <td><strong>${item.nama_bendung || item.nama_bangunan}</strong></td>
+                <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
+                <td style="font-weight:bold">${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
+                <td>
+                    <span class="${item.keterangan === 'CUKUP' || item.status === 'CUKUP' ? 'status-cukup' : 'status-kurang'}">
+                        ${item.keterangan || item.status || '-'}
+                    </span>
+                </td>
+                <td class="col-aksi">
+                    <button class="btn btn-red btn-sm" onclick="hapusData(${item.id})">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
     }
 
     async function hapusData(id) {
-        if (confirm("Hapus baris data ini?")) {
+        if (confirm("Apakah Anda yakin ingin menghapus baris data ini?")) {
             const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
             if (error) alert("Gagal menghapus: " + error.message);
             else muatData();
@@ -152,12 +139,12 @@
     }
 
     async function hapusSemuaData() {
-        const password = prompt("Ketik 'KONFIRMASI' untuk menghapus SEMUA rekap data:");
+        const password = prompt("Ketik 'KONFIRMASI' untuk menghapus SEMUA data:");
         if (password === "KONFIRMASI") {
             const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
-            if (error) alert("Gagal membersihkan database: " + error.message);
+            if (error) alert("Gagal: " + error.message);
             else {
-                alert("Database berhasil dikosongkan.");
+                alert("Semua data berhasil dibersihkan.");
                 muatData();
             }
         }
@@ -166,7 +153,7 @@
     function formatTanggal(tgl) {
         if(!tgl) return "-";
         const d = new Date(tgl);
-        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: '2-digit' });
     }
 
     function resetFilter() {
