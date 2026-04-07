@@ -85,7 +85,9 @@
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/foto-bendung/`;
+    
+    // DISESUAIKAN: Menggunakan bucket 'img' sesuai gambar yang kamu kirim
+    const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/public/img/`;
 
     document.getElementById('tgl_input').valueAsDate = new Date();
 
@@ -99,7 +101,6 @@
         tbody.innerHTML = "";
         
         daftarBendung.forEach((nama, i) => {
-            // Mengubah nama menjadi format file (kecil semua, tanpa spasi)
             const fileName = nama.toLowerCase().replace(/\s+/g, '') + ".jpg";
             const fullUrl = STORAGE_URL + fileName;
 
@@ -160,7 +161,7 @@
         
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
-            // Mengirim data ke kolom 'nama_bendung' sesuai SQL terbaru
+            // DISESUAIKAN: Nama kolom database harus 'bendungan_dan_foto'
             bendungan_dan_foto: row.querySelector('.nama-text').innerText,
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
@@ -182,7 +183,8 @@
         btn.disabled = false;
 
         if (error) {
-            alert("Gagal Simpan: " + error.message);
+            // Memberikan pesan bantuan jika kolom masih salah
+            alert("Gagal Simpan: " + error.message + "\n\nPastikan nama kolom di database sudah sesuai.");
             console.error(error);
         } else {
             alert("Berhasil! Semua data monitoring dan lahan telah disimpan.");
