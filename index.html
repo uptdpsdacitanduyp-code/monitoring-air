@@ -160,7 +160,7 @@
         
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
-            // Mengirim data ke kolom 'bendungan_dan_foto' sesuai SQL terbaru
+            // Mengirim data ke kolom 'nama_bendung' sesuai SQL terbaru
             bendungan_dan_foto: row.querySelector('.nama-text').innerText,
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
