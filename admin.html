@@ -49,6 +49,19 @@
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
             th { background-color: #ddd !important; color: black !important; border: 1px solid #000 !important; }
         }
+        /* CSS baru untuk foto di tabel admin */
+.admin-nama-flex { display: flex; align-items: center; gap: 8px; justify-content: flex-start; text-align: left; }
+.img-admin-mini { 
+    width: 60px; height: 40px; 
+    object-fit: cover; border-radius: 4px; border: 1px solid #ccc;
+    cursor: pointer; transition: 0.2s;
+}
+.img-admin-mini:hover { transform: scale(1.1); border-color: #2196F3; }
+
+/* Tambahan CSS agar cetakan PDF tidak berantakan */
+@media print {
+    .img-admin-mini { border: none !important; -webkit-print-color-adjust: exact; }
+}
     </style>
 </head>
 <body>
@@ -110,27 +123,47 @@
         const filter = document.getElementById('filterTgl').value;
         const tbody = document.getElementById('adminBody');
         
-        tbody.innerHTML = `<tr><td colspan="11">Sedang mengambil data...</td></tr>`;
+      // Ganti bagian tbody.innerHTML lama dengan ini:
 
-        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false }).order('bendungan_dan_foto', { ascending: true });
+tbody.innerHTML = data.map(item => {
+    const statusClass = (item.keterangan === 'CUKUP') ? 'status-cukup' : 'status-kurang';
+    
+    // 1. Ambil nama bendung murni (tanpa embel-embel foto)
+    const namaMurni = item.bendungan_dan_foto || item.nama_bendung || item.nama_bangunan || '-';
+    
+    // 2. Buat URL foto murni berdasarkan nama bendung (huruf kecil, tanpa spasi + .jpeg)
+    const namaFile = namaMurni.toLowerCase().replace(/\s+/g, '') + ".jpeg";
+    const urlFotoMurni = "img/" + namaFile; // Mengambil dari folder lokal 'img/'
 
-        if (filter) {
-            query = query.eq('tanggal', filter);
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-            alert("Gagal mengambil data: " + error.message);
-            tbody.innerHTML = `<tr><td colspan="11" style="color:red">Error: ${error.message}</td></tr>`;
-            return;
-        }
-
-        if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11">Data tidak ditemukan pada tanggal tersebut.</td></tr>`;
-            return;
-        }
-
+    return `
+        <tr>
+            <td>${formatTanggal(item.tanggal)}</td>
+            
+            <td>
+                <div class="admin-nama-flex">
+                    <img src="${urlFotoMurni}" class="img-admin-mini" 
+                         onclick="zoomGambar('${urlFotoMurni}', 'Bendung ${namaMurni}')"
+                         onerror="this.src='https://via.placeholder.com/60x40?text=No+Photo'">
+                    <strong>${namaMurni}</strong>
+                </div>
+            </td>
+            
+            <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
+            <td style="font-weight:bold; color:${item.selisih < 0 ? '#9c0006' : '#006100'}">
+                ${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}
+            </td>
+            <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
+            <td><span class="${statusClass}">${item.keterangan || '-'}</span></td>
+            <td class="col-aksi">
+                <button class="btn btn-red btn-sm" onclick="hapusData(${item.id})">Hapus</button>
+            </td>
+        </tr>
+    `;
+}).join('');
         tbody.innerHTML = data.map(item => {
             const isKurang = (item.keterangan === 'KURANG AIR' || item.selisih < 0);
             return `
