@@ -6,59 +6,83 @@
     <title>Laporan Monitoring Air Lengkap - 10 Bendung</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
         
-        /* HEADER STYLE */
-        .header-uptd { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 30px; border-bottom: 3px solid #2196F3; padding-bottom: 20px; }
-        .logo-uptd-img { width: 90px; height: 90px; object-fit: contain; }
-        .titles-container { display: flex; flex-direction: column; }
-        .main-title { margin: 0; color: #1a237e; text-transform: uppercase; font-size: 32px; font-weight: 800; line-height: 1.1; }
-        .sub-title { margin: 0; color: #444; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- PERBAIKAN DI SINI UNTUK MENENGAHKAN --- */
+        .header-uptd { 
+            display: flex; 
+            flex-direction: column; /* Berubah jadi kolom agar logo di atas tulisan */
+            align-items: center; /* Tengahkan secara horizontal */
+            justify-content: center; /* Tengahkan secara vertikal jika ada sisa ruang */
+            gap: 10px; /* Jarak antara logo dan tulisan */
+            margin-bottom: 25px; 
+            border-bottom: 3px solid #2196F3; 
+            padding-bottom: 15px; 
+            text-align: center; /* Pastikan teks di dalamnya juga rata tengah */
+        }
         
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 8px; }
-        .btn-admin { padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
-        .btn-admin:hover { background: #1565C0; }
+        .logo-uptd-img { width: 80px; height: auto; }
         
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; background: white; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; word-wrap: break-word; }
-        th { background-color: #2196F3; color: white; height: 50px; text-transform: uppercase; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
+        .titles-container { 
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Tengahkan tulisan induk dan anak */
+        }
+        /* ------------------------------------------- */
 
-        .nama-container { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .main-title { margin: 0; color: #1a237e; font-size: 24px; text-transform: uppercase; }
+        .sub-title { margin: 0; color: #555; font-size: 18px; font-weight: normal; }
+
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .btn-admin { padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        .btn-admin:hover { background: #1976D2; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; table-layout: fixed; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 12px; word-wrap: break-word; }
+        th { background-color: #e3f2fd; color: #333; font-weight: bold; text-transform: uppercase; height: 50px;}
+
         .img-bendung { 
-            width: 140px; height: 90px; 
-            object-fit: cover; border-radius: 6px; border: 2px solid #333;
+            width: 120px; height: 80px; 
+            object-fit: cover; border-radius: 4px; border: 1px solid #ddd;
             cursor: pointer; transition: 0.3s;
         }
-        .img-bendung:hover { transform: scale(1.05); }
+        .img-bendung:hover { opacity: 0.8; }
 
+        input[type="number"] { width: 80%; padding: 4px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;}
+        input:focus { border-color: #2196F3; outline: none; box-shadow: 0 0 5px rgba(33,150,243,0.3); }
+
+        .btn-save { 
+            padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 6px; 
+            cursor: pointer; font-weight: bold; width: 100%; margin-top: 25px; font-size: 16px; 
+            transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-save:hover { background: #1b5e20; }
+        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Modal Styles */
         #imageModal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85);
             justify-content: center; align-items: center; flex-direction: column;
         }
-        #modalImg { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 10px; }
-
-        input { width: 90%; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
-        .btn-save { padding: 18px; background: #3ecf8e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; font-size: 18px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-save:hover { background: #2eb875; transform: translateY(-2px); }
+        #modalImg { max-width: 85%; max-height: 75%; border: 5px solid white; border-radius: 8px; }
         
-        .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; padding: 4px; border-radius: 4px; }
-        .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; padding: 4px; border-radius: 4px; }
+        .status-cukup { background-color: #c6efce; color: #006100; font-weight: bold; }
+        .status-kurang { background-color: #ffc7ce; color: #9c0006; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="imageModal">
-    <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer;" onclick="tutupModal()">&times;</span>
-    <img id="modalImg">
-    <p id="caption" style="color: white; margin-top: 15px; font-size: 18px;"></p>
+<div id="imageModal" onclick="tutupModal()">
+    <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer;">&times;</span>
+    <img id="modalImg" src="">
+    <p id="caption" style="color: white; margin-top: 15px; font-size: 18px; font-weight: bold;"></p>
 </div>
 
 <div class="container">
     <div class="header-uptd">
-        <img src="img/g2.png" alt="Logo UPTD" class="logo-uptd-img" onerror="this.src='https://via.placeholder.com/90?text=LOGO+UPTD'">
+        <img src="img/g2.png" alt="Logo" class="logo-uptd-img" onerror="this.src='https://via.placeholder.com/80?text=LOGO'">
         <div class="titles-container">
             <h1 class="main-title">CAI TEPI SAWAH</h1>
             <h2 class="sub-title">UPTD PSDA WS CITANDUY</h2>
@@ -68,33 +92,37 @@
     <div class="controls">
         <a href="admin.html" class="btn-admin">← LIHAT REKAP ADMIN</a>
         <div>
-            <label style="font-weight:bold;">TANGGAL LAPORAN: </label>
-            <input type="date" id="tgl_input" style="width: auto; padding: 5px;">
+            <label style="font-weight:bold;">Tanggal Laporan: </label>
+            <input type="date" id="tgl_input" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
         </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th width="40px">NO</th>
-                <th width="180px">NAMA BANGUNAN & FOTO</th>
-                <th>KEBUTUHAN (m³/s)</th>
-                <th>KETERSEDIAAN (m³/s)</th>
-                <th>KEKURANGAN/ KELEBIHAN</th>
-                <th>LUAS LAYANAN (HEKTAR)</th>
-                <th>PENGOLAHAN TANAH</th>
-                <th>PERTUMBUHAN</th>
-                <th>PANEN</th>
-                <th width="100px">KET</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th width="40px">NO</th>
+                    <th width="180px">NAMA BENDUNG & FOTO</th>
+                    <th>KEBUTUHAN<br>(l/dtk)</th>
+                    <th>KETERSEDIAAN<br>(l/dtk)</th>
+                    <th>KEKURANGAN / KELEBIHAN</th>
+                    <th>LUAS LAYANAN (HEKTAR)</th>
+                    <th>PENGOLAHAN TANAH</th>
+                    <th>PERTUMBUHAN</th>
+                    <th>PANEN</th>
+                    <th width="100px">KET</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
 
-    <button class="btn-save" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA KE DATABASE SUPABASE</button>
+    <button class="btn-save" id="btnSimpan" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA KE DATABASE</button>
 </div>
 
 <script>
+    // Konfigurasi Supabase (Tetap sama)
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -102,39 +130,40 @@
     document.getElementById('tgl_input').valueAsDate = new Date();
 
     const daftarBendung = [
-        "CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", 
-        "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"
+        "CIMULU (BCMU.0)", "CIGEDE (BCg.0)", "MUHARA (BMh.0)", "BARANANGSIANG (Bbrs.0)", "CIKEMBANG (BCKM.0)", 
+        "CIPUTRAHAJI (BCp.0)", "GUNUNG PUTRI (BGP.0)", "WANGUNDIREJA (BWD.0)", "LAKSANA HARJA (BLH.0)", "PARAKAN HAJI (free intake)"
     ];
 
     function renderTabel() {
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "";
+        let htmlContent = "";
         
         daftarBendung.forEach((nama, i) => {
             const fileName = (i + 1) + ".jpeg"; 
             const fullUrl = "img/" + fileName;
 
-            tbody.innerHTML += `
+            htmlContent += `
                 <tr class="row-data">
                     <td>${i + 1}</td>
                     <td>
-                        <div class="nama-container">
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:5px; padding: 5px 0;">
                             <img src="${fullUrl}" class="img-bendung" 
                                  onclick="zoomGambar('${fullUrl}', 'Bendung ${nama}')"
-                                 onerror="this.src='https://via.placeholder.com/140x90?text=Foto+Bendung'">
-                            <span class="nama-text" style="font-weight:bold;">${nama}</span>
+                                 onerror="this.src='https://via.placeholder.com/120x80?text=Tanpa+Foto'">
+                            <span class="nama-text" style="font-weight:bold; font-size:11px;">${nama}</span>
                         </div>
                     </td>
                     <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
                     <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
-                    <td class="col-selisih">0.00</td>
+                    <td class="col-selisih" style="font-weight:bold;">0.00</td>
                     <td><input type="number" step="0.01" class="inp-luas" value="0.00"></td>
                     <td><input type="number" step="0.01" class="inp-olah" value="0.00"></td>
                     <td><input type="number" step="0.01" class="inp-tumbuh" value="0.00"></td>
                     <td><input type="number" step="0.01" class="inp-panen" value="0.00"></td>
-                    <td><span class="col-status status-cukup">CUKUP</span></td>
+                    <td class="col-status status-cukup">CUKUP</td>
                 </tr>`;
         });
+        tbody.innerHTML = htmlContent;
     }
 
     function hitung(el) {
@@ -158,23 +187,34 @@
     }
 
     function zoomGambar(url, txt) {
-        document.getElementById('imageModal').style.display = "flex";
-        document.getElementById('modalImg').src = url;
-        document.getElementById('caption').innerText = txt;
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        const caption = document.getElementById('caption');
+        modal.style.display = "flex";
+        modalImg.src = url;
+        caption.innerText = txt;
     }
 
-    function tutupModal() { document.getElementById('imageModal').style.display = "none"; }
+    function tutupModal() { 
+        document.getElementById('imageModal').style.display = "none"; 
+    }
 
     async function simpanKeSupabase() {
         const tgl = document.getElementById('tgl_input').value;
+        if (!tgl) {
+            alert("Silakan pilih tanggal terlebih dahulu!");
+            return;
+        }
+
+        if (!confirm("Apakah Anda yakin data yang dimasukkan sudah benar?")) return;
+
         const rows = document.querySelectorAll('.row-data');
-        
         const payload = Array.from(rows).map(row => ({
             tanggal: tgl,
             bendungan_dan_foto: row.querySelector('.nama-text').innerText,
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
-            selisih: parseFloat(row.querySelector('.col-selisih').innerText) || 0,
+            selisih: parseFloat(row.querySelector('.col-selisih').innerText.replace('+', '')) || 0,
             luas_layanan: parseFloat(row.querySelector('.inp-luas').value) || 0,
             pengolahan_tanah: parseFloat(row.querySelector('.inp-olah').value) || 0,
             pertumbuhan: parseFloat(row.querySelector('.inp-tumbuh').value) || 0,
@@ -182,19 +222,19 @@
             keterangan: row.querySelector('.col-status').innerText
         }));
 
-        const btn = document.querySelector('.btn-save');
-        btn.innerText = "SEDANG MENYIMPAN...";
+        const btn = document.getElementById('btnSimpan');
+        btn.innerText = "⏳ SEDANG MENYIMPAN...";
         btn.disabled = true;
 
-        const { error } = await _supabase.from('laporan_air').insert(payload);
-        
-        btn.innerText = "SIMPAN SEMUA DATA KE DATABASE SUPABASE";
-        btn.disabled = false;
-
-        if (error) {
-            alert("Gagal Simpan: " + error.message);
-        } else {
-            alert("Berhasil! Data monitoring UPTD PSDA telah disimpan.");
+        try {
+            const { error } = await _supabase.from('laporan_air').insert(payload);
+            if (error) throw error;
+            alert("✅ Berhasil! Semua data telah disimpan ke database.");
+        } catch (err) {
+            alert("❌ Gagal Simpan: " + err.message);
+        } finally {
+            btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
+            btn.disabled = false;
         }
     }
 
