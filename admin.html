@@ -120,11 +120,16 @@
         }
 
         tbody.innerHTML = data.map(item => {
-            const nama = item.bendungan_dan_foto || "-";
-            let idx = daftar.findIndex(d => nama.toUpperCase().includes(d));
+            let namaAsli = item.bendungan_dan_foto || "-";
+            
+            // Ambil nama depannya saja (sebelum kurung)
+            let namaHanya = namaAsli.split(' (')[0].toUpperCase();
+            // Tambahkan kata "BENDUNG " di depan jika belum ada
+            let namaTampilan = namaHanya.startsWith("BENDUNG") ? namaHanya : "BENDUNG " + namaHanya;
+            
+            let idx = daftar.findIndex(d => namaAsli.toUpperCase().includes(d));
             let imageNum = idx + 1;
 
-            // Logika tukar gambar 9 dan 10
             if (imageNum === 9) {
                 imageNum = 10;
             } else if (imageNum === 10) {
@@ -139,9 +144,9 @@
                 <td>
                     <div class="nama-foto-cell">
                         <img src="${fotoUrl}" class="img-admin" 
-                             onclick="zoomGambar('${fotoUrl}', '${nama}')"
+                             onclick="zoomGambar('${fotoUrl}', '${namaTampilan}')"
                              onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
-                        <strong>${nama}</strong>
+                        <strong>${namaTampilan}</strong>
                     </div>
                 </td>
                 <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
