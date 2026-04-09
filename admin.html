@@ -6,77 +6,93 @@
     <title>Admin - Rekap Data Air & Lahan</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1450px; margin: auto; }
-        h2 { color: #333; text-align: center; text-transform: uppercase; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1500px; margin: auto; }
+        h2 { color: #1a237e; text-align: center; text-transform: uppercase; margin-bottom: 25px; border-bottom: 2px solid #2196F3; padding-bottom: 10px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px; word-wrap: break-word; }
-        th { background: #333; color: white; text-transform: uppercase; height: 50px; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
+        /* Table Styling */
+        .table-wrapper { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; min-width: 1000px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 12px; word-wrap: break-word; }
+        th { background: #263238; color: white; text-transform: uppercase; height: 50px; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #f1f1f1; }
         
-        /* Gaya kolom Nama & Foto Gabungan */
+        /* Foto & Nama */
         .nama-foto-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 5px; }
-        .img-admin { width: 100px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+        .img-admin { width: 110px; height: 75px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; background: #eee; }
 
-        .filter-box { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
-        .status-cukup { color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 3px 6px; border-radius: 4px; }
-        .status-kurang { color: #c62828; font-weight: bold; background: #ffebee; padding: 3px 6px; border-radius: 4px; }
+        /* Filter Box */
+        .filter-box { margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #e0e0e0; display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        
+        /* Status */
+        .status-cukup { color: #2e7d32; font-weight: bold; background: #c6efce; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .status-kurang { color: #c62828; font-weight: bold; background: #ffc7ce; padding: 4px 8px; border-radius: 4px; display: inline-block; }
 
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; font-size: 12px; }
+        /* Buttons */
+        .btn { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; font-size: 13px; transition: 0.3s; }
         .btn-blue { background: #2196F3; color: white; }
+        .btn-blue:hover { background: #1976D2; }
         .btn-green { background: #3ecf8e; color: white; }
         .btn-red { background: #f44336; color: white; }
-        .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+        .btn-red:hover { background: #d32f2f; }
+        .btn-outline { background: white; border: 1px solid #ccc; color: #555; }
+        .btn-outline:hover { background: #f5f5f5; }
 
         @media print {
-            .filter-box, .btn, a, .col-aksi { display: none !important; }
+            .filter-box, .btn, a, .col-aksi, h2 { display: none !important; }
             body { background: white; padding: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            th { background: #eee !important; color: black !important; }
+            table { font-size: 10px; }
+            .img-admin { width: 80px; height: 55px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Halaman Admin - Rekap Data Harian</h2>
+    <h2>REKAP DATA MONITORING HARIAN</h2>
     
-    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
         <a href="index.html" class="btn btn-outline">← Kembali ke Form Input</a>
         <button class="btn btn-blue" onclick="window.print()">Cetak Laporan (PDF)</button>
         <button class="btn btn-red" onclick="hapusSemuaData()">Hapus Semua Rekap</button>
     </div>
 
     <div class="filter-box">
-        <label>Filter Tanggal: </label>
-        <input type="date" id="filterTgl">
+        <label style="font-weight: bold;">Filter Tanggal: </label>
+        <input type="date" id="filterTgl" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
         <button class="btn btn-green" onclick="muatData()">Cari Data</button>
-        <button class="btn btn-outline" onclick="resetFilter()">Tampilkan Semua</button>
+        <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th width="70px">Tanggal</th>
-                <th width="180px">NAMA BENDUNG & FOTO</th>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th width="80px">TANGGAL</th>
+                    <th width="180px">NAMA BENDUNG & FOTO</th>
                     <th>KEBUTUHAN<br>(l/dtk)</th>
                     <th>KETERSEDIAAN<br>(l/dtk)</th>
-                    <th>KEKURANGAN / KELEBIHAN</th>
-                    <th>LUAS LAYANAN (HEKTAR)</th>
-                    <th>PENGOLAHAN TANAH</th>
-                    <th>PERTUMBUHAN</th>
+                    <th>+/-<br>SELISIH</th>
+                    <th>LUAS<br>(HA)</th>
+                    <th>OLAH<br>TANAH</th>
+                    <th>TUMBUH</th>
                     <th>PANEN</th>
-                <th width="90px">Keterangan</th>
-                <th width="60px" class="col-aksi">Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="adminBody">
-            <tr><td colspan="11">Memuat data...</td></tr>
-        </tbody>
-    </table>
+                    <th width="110px">KETERANGAN</th>
+                    <th width="80px" class="col-aksi">AKSI</th>
+                </tr>
+            </thead>
+            <tbody id="adminBody">
+                <tr><td colspan="11">Memuat data...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
+    // Konfigurasi Supabase
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -86,77 +102,85 @@
         const tbody = document.getElementById('adminBody');
         tbody.innerHTML = `<tr><td colspan="11">Sedang mengambil data...</td></tr>`;
 
-        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false });
+        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false }).order('id', { ascending: true });
+        
         if (filter) query = query.eq('tanggal', filter);
 
         const { data, error } = await query;
+        
         if (error) {
             tbody.innerHTML = `<tr><td colspan="11" style="color:red">Error: ${error.message}</td></tr>`;
             return;
         }
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11">Data tidak ditemukan.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11">Data kosong atau tidak ditemukan pada tanggal tersebut.</td></tr>`;
             return;
         }
 
+        const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
+
         tbody.innerHTML = data.map(item => {
-            const nama = item.bendungan_dan_foto || "-";
+            const namaDb = item.bendungan_dan_foto || "";
             
-            // Logika Foto (menggunakan URL dari DB atau folder lokal)
-            let fotoUrl = item.foto_url;
-            if (!fotoUrl) {
-                const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
-                const idx = daftar.indexOf(nama);
-                if (idx !== -1) fotoUrl = `img/${idx + 1}.jpeg`;
-            }
+            // Mencari index gambar berdasarkan kecocokan nama
+            let idxGambar = daftar.findIndex(d => namaDb.toUpperCase().includes(d));
+            let fotoUrl = (idxGambar !== -1) ? `img/${idxGambar + 1}.jpeg` : 'https://via.placeholder.com/110x75?text=No+Photo';
 
             return `
             <tr>
                 <td>${formatTanggal(item.tanggal)}</td>
                 <td>
                     <div class="nama-foto-cell">
-                        <img src="${fotoUrl}" class="img-admin" onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
-                        <strong>${nama}</strong>
+                        <img src="${fotoUrl}" class="img-admin" onerror="this.src='https://via.placeholder.com/110x75?text=No+Photo'">
+                        <strong>${namaDb}</strong>
                     </div>
                 </td>
-                <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-                <td style="font-weight:bold">${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
+                <td>${Number(item.kebutuhan || 0).toFixed(2)}</td>
+                <td>${Number(item.ketersediaan || 0).toFixed(2)}</td>
+                <td style="font-weight:bold; color: ${item.selisih < 0 ? '#c62828' : '#2e7d32'}">
+                    ${item.selisih > 0 ? '+' : ''}${Number(item.selisih || 0).toFixed(2)}
+                </td>
+                <td>${Number(item.luas_layanan || 0).toFixed(2)}</td>
+                <td>${Number(item.pengolahan_tanah || 0).toFixed(2)}</td>
+                <td>${Number(item.pertumbuhan || 0).toFixed(2)}</td>
+                <td>${Number(item.panen || 0).toFixed(2)}</td>
                 <td>
                     <span class="${(item.keterangan === 'CUKUP') ? 'status-cukup' : 'status-kurang'}">
                         ${item.keterangan || '-'}
                     </span>
                 </td>
                 <td class="col-aksi">
-                    <button class="btn btn-red" style="padding:4px 8px; font-size:10px;" onclick="hapusData(${item.id})">Hapus</button>
+                    <button class="btn btn-red" style="padding:5px 10px; font-size:11px;" onclick="hapusData(${item.id})">Hapus</button>
                 </td>
             </tr>`;
         }).join('');
     }
 
     async function hapusData(id) {
-        if (confirm("Hapus data ini?")) {
+        if (confirm("Apakah Anda yakin ingin menghapus baris data ini?")) {
             const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
-            if (error) alert(error.message); else muatData();
+            if (error) alert("Gagal menghapus: " + error.message); 
+            else muatData();
         }
     }
 
     async function hapusSemuaData() {
-        if (prompt("Ketik 'KONFIRMASI' untuk hapus semua:") === "KONFIRMASI") {
+        const validasi = prompt("Peringatan! Ini akan menghapus seluruh data rekap.\nKetik 'KONFIRMASI' untuk melanjutkan:");
+        if (validasi === "KONFIRMASI") {
             const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
-            if (error) alert(error.message); else muatData();
+            if (error) alert("Gagal menghapus semua data: " + error.message); 
+            else muatData();
+        } else if (validasi !== null) {
+            alert("Kata kunci salah. Penghapusan dibatalkan.");
         }
     }
 
     function formatTanggal(tgl) {
         if(!tgl) return "-";
         const d = new Date(tgl);
-        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: '2-digit' });
+        // Format: Tgl/Bln/Thn
+        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
     function resetFilter() {
