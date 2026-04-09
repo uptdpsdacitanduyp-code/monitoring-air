@@ -9,17 +9,16 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
         
-        /* --- PERBAIKAN DI SINI UNTUK MENENGAHKAN --- */
         .header-uptd { 
             display: flex; 
-            flex-direction: column; /* Berubah jadi kolom agar logo di atas tulisan */
-            align-items: center; /* Tengahkan secara horizontal */
-            justify-content: center; /* Tengahkan secara vertikal jika ada sisa ruang */
-            gap: 10px; /* Jarak antara logo dan tulisan */
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
             margin-bottom: 25px; 
             border-bottom: 3px solid #2196F3; 
             padding-bottom: 15px; 
-            text-align: center; /* Pastikan teks di dalamnya juga rata tengah */
+            text-align: center; 
         }
         
         .logo-uptd-img { width: 80px; height: auto; }
@@ -27,9 +26,8 @@
         .titles-container { 
             display: flex;
             flex-direction: column;
-            align-items: center; /* Tengahkan tulisan induk dan anak */
+            align-items: center; 
         }
-        /* ------------------------------------------- */
 
         .main-title { margin: 0; color: #1a237e; font-size: 24px; text-transform: uppercase; }
         .sub-title { margin: 0; color: #555; font-size: 18px; font-weight: normal; }
@@ -39,17 +37,17 @@
         .btn-admin:hover { background: #1976D2; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; table-layout: fixed; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 12px; word-wrap: break-word; }
-        th { background-color: #e3f2fd; color: #333; font-weight: bold; text-transform: uppercase; height: 50px;}
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 11px; word-wrap: break-word; }
+        th { background-color: #e3f2fd; color: #333; font-weight: bold; text-transform: uppercase; height: 60px;}
 
         .img-bendung { 
-            width: 120px; height: 80px; 
+            width: 100px; height: 70px; 
             object-fit: cover; border-radius: 4px; border: 1px solid #ddd;
             cursor: pointer; transition: 0.3s;
         }
         .img-bendung:hover { opacity: 0.8; }
 
-        input[type="number"] { width: 80%; padding: 4px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;}
+        input[type="number"] { width: 90%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-size: 11px;}
         input:focus { border-color: #2196F3; outline: none; box-shadow: 0 0 5px rgba(33,150,243,0.3); }
 
         .btn-save { 
@@ -60,7 +58,6 @@
         .btn-save:hover { background: #1b5e20; }
         .btn-save:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* Modal Styles */
         #imageModal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
             width: 100%; height: 100%; background: rgba(0,0,0,0.85);
@@ -101,16 +98,16 @@
         <table>
             <thead>
                 <tr>
-                    <th width="40px">NO</th>
-                    <th width="180px">NAMA BENDUNG & FOTO</th>
-                    <th>KEBUTUHAN<br>(m³)</th>
-                    <th>KETERSEDIAAN<br>(m³)</th>
-                    <th>KEKURANGAN / KELEBIHAN</th>
-                    <th>LUAS LAYANAN (HEKTAR)</th>
-                    <th>PENGOLAHAN TANAH</th>
-                    <th>PERTUMBUHAN</th>
-                    <th>PANEN</th>
-                    <th width="100px">KET</th>
+                    <th width="35px">NO</th>
+                    <th width="150px">NAMA BENDUNG & FOTO</th>
+                    <th width="80px">KEBUTUHAN<br>(m³/dtk)</th>
+                    <th width="80px">KETERSEDIAAN<br>(m³/dtk)</th>
+                    <th width="90px">+/- SELISIH</th>
+                    <th width="100px">LUAS LAYANAN<br>(Ha)</th>
+                    <th width="80px">OLAH TANAH<br>(Ha)</th>
+                    <th width="80px">TUMBUH<br>(Ha)</th>
+                    <th width="80px">PANEN<br>(Ha)</th>
+                    <th width="110px">KETERANGAN</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -122,7 +119,6 @@
 </div>
 
 <script>
-    // Konfigurasi Supabase (Tetap sama)
     const SUPABASE_URL = 'https://bgreqgputsaocwaloirj.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -130,27 +126,20 @@
     document.getElementById('tgl_input').valueAsDate = new Date();
 
     const daftarBendung = [
-        " BENDUNG CIMULU ", "  BENDUNG CIGEDE ", "  BENDUNG MUHARA ", " BENDUNG BARANANGSIANG ", " BENDUNG CIKEMBANG ", 
-        " BENDUNG CIPUTRAHAJI ", " BENDUNG GUNUNG PUTRI ", "  BENDUNG WANGUNDIREJA", " BENDUNG LAKSANA HARJA ", " BENDUNG PARAKAN HAJI"
+        "BENDUNG CIMULU", "BENDUNG CIGEDE", "BENDUNG MUHARA", "BENDUNG BARANANGSIANG", "BENDUNG CIKEMBANG", 
+        "BENDUNG CIPUTRAHAJI", "BENDUNG GUNUNG PUTRI", "BENDUNG WANGUNDIREJA", "BENDUNG LAKSANA HARJA", "BENDUNG PARAKAN HAJI"
     ];
 
-   function renderTabel() {
+    function renderTabel() {
         const tbody = document.getElementById('tableBody');
         let htmlContent = "";
         
         daftarBendung.forEach((nama, i) => {
-            // Logika penomoran file gambar
             let imageNum = i + 1;
-            
-            // Tukar gambar khusus untuk nomor 9 dan 10
-            if (imageNum === 9) {
-                imageNum = 10;
-            } else if (imageNum === 10) {
-                imageNum = 9;
-            }
+            if (imageNum === 9) imageNum = 10;
+            else if (imageNum === 10) imageNum = 9;
 
-            const fileName = imageNum + ".jpeg"; 
-            const fullUrl = "img/" + fileName;
+            const fullUrl = "img/" + imageNum + ".jpeg";
 
             htmlContent += `
                 <tr class="row-data">
@@ -158,9 +147,9 @@
                     <td>
                         <div style="display:flex; flex-direction:column; align-items:center; gap:5px; padding: 5px 0;">
                             <img src="${fullUrl}" class="img-bendung" 
-                                 onclick="zoomGambar('${fullUrl}', 'Bendung ${nama}')"
+                                 onclick="zoomGambar('${fullUrl}', '${nama}')"
                                  onerror="this.src='https://via.placeholder.com/120x80?text=Tanpa+Foto'">
-                            <span class="nama-text" style="font-weight:bold; font-size:11px;">${nama}</span>
+                            <span class="nama-text" style="font-weight:bold; font-size:10px;">${nama}</span>
                         </div>
                     </td>
                     <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
@@ -185,7 +174,7 @@
         const colSelisih = row.querySelector('.col-selisih');
         const colStatus = row.querySelector('.col-status');
         
-        colSelisih.innerText = (selisih >= 0 ? "+" : "") + selisih;
+        colSelisih.innerText = (selisih > 0 ? "+" : "") + selisih;
         
         if (parseFloat(selisih) < 0) {
             colStatus.innerText = "KURANG AIR";
@@ -216,7 +205,7 @@
             return;
         }
 
-        if (!confirm("Apakah Anda yakin data yang dimasukkan sudah benar?")) return;
+        if (!confirm("Apakah Anda yakin ingin menyimpan data ini?")) return;
 
         const rows = document.querySelectorAll('.row-data');
         const payload = Array.from(rows).map(row => ({
@@ -239,7 +228,7 @@
         try {
             const { error } = await _supabase.from('laporan_air').insert(payload);
             if (error) throw error;
-            alert("✅ Berhasil! Semua data telah disimpan ke database.");
+            alert("✅ Berhasil! Data telah disimpan.");
         } catch (err) {
             alert("❌ Gagal Simpan: " + err.message);
         } finally {
