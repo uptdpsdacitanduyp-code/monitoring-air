@@ -55,7 +55,7 @@
 
 <div class="container">
     <div class="header-logo">
-        <img src="img/g2.png">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Logo_PUPR.png" alt="Logo">
         <h1>CAI TEPI SAWAH</h1>
         <p>UPTD PSDA WS CITANDUY</p>
     </div>
@@ -159,6 +159,23 @@
                 </td>
             </tr>`;
         }).join('');
+    }
+
+    async function hapusData(id) {
+        if (confirm("Hapus data rekap ini secara permanen?")) {
+            const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
+            if (error) alert("Gagal menghapus: " + error.message);
+            else muatData();
+        }
+    }
+
+    async function hapusSemuaData() {
+        const konfirmasi = prompt("Ketik 'HAPUS' untuk menghapus SEMUA data rekap:");
+        if (konfirmasi === "HAPUS") {
+            const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
+            if (error) alert("Gagal: " + error.message);
+            else muatData();
+        }
     }
 
     function resetFilter() {
