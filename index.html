@@ -103,7 +103,7 @@
                 <tr>
                     <th width="40px">NO</th>
                     <th width="180px">NAMA BENDUNG & FOTO</th>
-                    <th>KEBUTUHAN<br>(l/dtk)</th>
+                    <th>KEBUTUHAN<br>()</th>
                     <th>KETERSEDIAAN<br>(l/dtk)</th>
                     <th>KEKURANGAN / KELEBIHAN</th>
                     <th>LUAS LAYANAN (HEKTAR)</th>
@@ -134,12 +134,22 @@
         "CIPUTRAHAJI (BCp.0)", "GUNUNG PUTRI (BGP.0)", "WANGUNDIREJA (BWD.0)", "LAKSANA HARJA (BLH.0)", "PARAKAN HAJI (free intake)"
     ];
 
-    function renderTabel() {
+   function renderTabel() {
         const tbody = document.getElementById('tableBody');
         let htmlContent = "";
         
         daftarBendung.forEach((nama, i) => {
-            const fileName = (i + 1) + ".jpeg"; 
+            // Logika penomoran file gambar
+            let imageNum = i + 1;
+            
+            // Tukar gambar khusus untuk nomor 9 dan 10
+            if (imageNum === 9) {
+                imageNum = 10;
+            } else if (imageNum === 10) {
+                imageNum = 9;
+            }
+
+            const fileName = imageNum + ".jpeg"; 
             const fullUrl = "img/" + fileName;
 
             htmlContent += `
