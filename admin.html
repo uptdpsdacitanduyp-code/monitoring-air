@@ -161,16 +161,6 @@
         }).join('');
     }
 
-
-    async function hapusSemuaData() {
-        const konfirmasi = prompt("Ketik 'HAPUS' untuk menghapus SEMUA data rekap:");
-        if (konfirmasi === "HAPUS") {
-            const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
-            if (error) alert("Gagal: " + error.message);
-            else muatData();
-        }
-    }
-
     function resetFilter() {
         document.getElementById('filterTgl').value = "";
         muatData();
