@@ -9,7 +9,6 @@
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1550px; margin: auto; }
         
-        /* Header Logo Style sesuai gambar */
         .header-logo { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #2196F3; padding-bottom: 15px; }
         .header-logo img { width: 70px; height: auto; margin-bottom: 10px; }
         .header-logo h1 { margin: 0; color: #0d47a1; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
@@ -17,18 +16,13 @@
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; table-layout: fixed; }
         th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 10px; word-wrap: break-word; }
-        th { background: #e3f2fd; color: #333; text-transform: uppercase; height: 45px; }
+        th { background: #e3f2fd; color: #333; text-transform: uppercase; height: 50px; }
         
         .nama-foto-cell { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         
-        /* --- UKURAN GAMBAR DIPERBESAR DI SINI --- */
         .img-admin { 
-            width: 130px; /* Diperbesar dari 85px */
-            height: 90px; /* Diperbesar dari 60px */
-            object-fit: cover; 
-            border-radius: 6px; 
-            border: 2px solid #ccc; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 120px; height: 80px; 
+            object-fit: cover; border-radius: 6px; border: 1px solid #ccc;
         }
 
         .filter-box { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; }
@@ -37,17 +31,15 @@
         .btn-red { background: #f44336; color: white; }
         .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
 
-        /* --- CSS PRINT OPTIMIZATION --- */
         @media print {
             @page { size: A4 landscape; margin: 0.5cm; }
             body { background: white; padding: 0; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
-            .no-print, .btn, .col-aksi, .filter-box { display: none !important; }
+            .no-print, .btn, .filter-box { display: none !important; }
             table { width: 100%; border: 1px solid #000; }
             th { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             td { font-size: 9px; padding: 4px; }
             .img-admin { width: 110px; height: 75px; border: 1px solid #000; }
-            .nama-foto-cell strong { font-size: 10px; }
         }
     </style>
 </head>
@@ -55,7 +47,7 @@
 
 <div class="container">
     <div class="header-logo">
-        <img src="img/g2.png">
+        <img src="img/g2.png" onerror="this.src='https://via.placeholder.com/70?text=LOGO'">
         <h1>CAI TEPI SAWAH</h1>
         <p>UPTD PSDA WS CITANDUY</p>
     </div>
@@ -67,7 +59,7 @@
     </div>
 
     <div class="filter-box no-print">
-        <label><b>Pilih Tanggal:</b></label>
+        <label><b>Filter Tanggal:</b></label>
         <input type="date" id="filterTgl">
         <button class="btn btn-blue" onclick="muatData()">Cari Data</button>
         <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
@@ -77,19 +69,18 @@
         <table id="tabelRekap">
             <thead>
                 <tr>
-                    <th width="30px">NO</th>
-                    <th width="190px">NAMA BENDUNG & FOTO</th> <th>KEBUTUHAN<br>(l/dtk)</th>
-                    <th>KETERSEDIAAN<br>(l/dtk)</th>
-                    <th>+/-</th>
-                    <th>LUAS LAYANAN<br>(HA)</th>
-                    <th>OLAH TANAH</th>
-                    <th>TUMBUH</th>
-                    <th>PANEN</th>
-                    <th width="70px">KET</th>
-                </tr>
+                    <th width="35px">NO</th>
+                    <th width="160px">NAMA BENDUNG & FOTO</th>
+                    <th>KEBUTUHAN<br>(m³/dtk)</th>
+                    <th>KETERSEDIAAN<br>(m³/dtk)</th>
+                    <th>+/- SELISIH</th>
+                    <th width="100px">KETERANGAN</th> <th>OLAH TANAH<br>(Ha)</th>
+                    <th>TUMBUH<br>(Ha)</th>
+                    <th>PANEN<br>(Ha)</th>
+                    <th width="100px">LUAS LAYANAN<br>(Total Ha)</th> </tr>
             </thead>
             <tbody id="adminBody">
-                <tr><td colspan="11">Memuat data...</td></tr>
+                <tr><td colspan="10">Memuat data...</td></tr>
             </tbody>
         </table>
     </div>
@@ -103,19 +94,19 @@
     async function muatData() {
         const filter = document.getElementById('filterTgl').value;
         const tbody = document.getElementById('adminBody');
-        tbody.innerHTML = `<tr><td colspan="11">Sedang memproses...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10">Sedang memproses...</td></tr>`;
 
         let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false });
         if (filter) query = query.eq('tanggal', filter);
 
         const { data, error } = await query;
         if (error) { 
-            tbody.innerHTML = `<tr><td colspan="11" style="color:red">Error: ${error.message}</td></tr>`; 
+            tbody.innerHTML = `<tr><td colspan="10" style="color:red">Error: ${error.message}</td></tr>`; 
             return; 
         }
 
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11">Tidak ada data untuk tanggal ini.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10">Tidak ada data untuk tanggal ini.</td></tr>`;
             return;
         }
 
@@ -123,10 +114,9 @@
 
         tbody.innerHTML = data.map((item, index) => {
             let namaAsli = item.bendungan_dan_foto || "-";
-            let namaHanya = namaAsli.split(' (')[0].toUpperCase();
-            let namaTampilan = namaHanya.startsWith("BENDUNG") ? namaHanya : "BENDUNG " + namaHanya;
-            
             let idx = daftar.findIndex(d => namaAsli.toUpperCase().includes(d));
+            
+            // Logika gambar 9 dan 10 ditukar sesuai index.html
             let imageNum = idx + 1;
             if (imageNum === 9) imageNum = 10; else if (imageNum === 10) imageNum = 9;
 
@@ -138,31 +128,23 @@
                 <td>
                     <div class="nama-foto-cell">
                         <img src="${fotoUrl}" class="img-admin" onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
-                        <strong style="font-size:11px;">${namaTampilan}</strong>
+                        <strong style="font-size:10px;">${namaAsli}</strong>
                     </div>
                 </td>
                 <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
                 <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-                <td style="font-weight:bold; color:${item.selisih < 0 ? 'red' : 'black'}">
+                <td style="font-weight:bold; color:${item.selisih < 0 ? 'red' : 'green'}">
                     ${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}
                 </td>
-                <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
                 <td style="background:${item.keterangan === 'CUKUP' ? '#e8f5e9' : '#ffebee'}">
                     <b style="color:${item.keterangan === 'CUKUP' ? '#2e7d32' : '#c62828'}">${item.keterangan || '-'}</b>
                 </td>
+                <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
+                <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
+                <td style="font-weight:bold; background:#f9f9f9;">${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
             </tr>`;
         }).join('');
-    }
-
-    async function hapusData(id) {
-        if (confirm("Hapus data rekap ini secara permanen?")) {
-            const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
-            if (error) alert("Gagal menghapus: " + error.message);
-            else muatData();
-        }
     }
 
     async function hapusSemuaData() {
