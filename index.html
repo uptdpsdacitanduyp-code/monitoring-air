@@ -50,6 +50,9 @@
         input[type="number"] { width: 90%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-size: 11px;}
         input:focus { border-color: #2196F3; outline: none; box-shadow: 0 0 5px rgba(33,150,243,0.3); }
 
+        /* Style untuk kolom hasil otomatis agar terlihat berbeda */
+        .col-readonly { background-color: #f9f9f9; font-weight: bold; color: #333; }
+
         .btn-save { 
             padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 6px; 
             cursor: pointer; font-weight: bold; width: 100%; margin-top: 25px; font-size: 16px; 
@@ -103,15 +106,15 @@
                     <th width="80px">KEBUTUHAN<br>(m³/dtk)</th>
                     <th width="80px">KETERSEDIAAN<br>(m³/dtk)</th>
                     <th width="90px">+/- SELISIH</th>
-                    <th width="100px">LUAS LAYANAN<br>(Ha)</th>
+                    <th width="110px">KETERANGAN</th>
                     <th width="80px">OLAH TANAH<br>(Ha)</th>
                     <th width="80px">TUMBUH<br>(Ha)</th>
                     <th width="80px">PANEN<br>(Ha)</th>
-                    <th width="110px">KETERANGAN</th>
+                    <th width="100px">LUAS LAYANAN<br>(Total Ha)</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                </tbody>
+            </tbody>
         </table>
     </div>
 
@@ -155,11 +158,11 @@
                     <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
                     <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
                     <td class="col-selisih" style="font-weight:bold;">0.00</td>
-                    <td><input type="number" step="0.01" class="inp-luas" value="0.00"></td>
-                    <td><input type="number" step="0.01" class="inp-olah" value="0.00"></td>
-                    <td><input type="number" step="0.01" class="inp-tumbuh" value="0.00"></td>
-                    <td><input type="number" step="0.01" class="inp-panen" value="0.00"></td>
                     <td class="col-status status-cukup">CUKUP</td>
+                    <td><input type="number" step="0.01" class="inp-olah" value="0.00" oninput="hitung(this)"></td>
+                    <td><input type="number" step="0.01" class="inp-tumbuh" value="0.00" oninput="hitung(this)"></td>
+                    <td><input type="number" step="0.01" class="inp-panen" value="0.00" oninput="hitung(this)"></td>
+                    <td class="col-luas-total col-readonly">0.00</td>
                 </tr>`;
         });
         tbody.innerHTML = htmlContent;
@@ -167,6 +170,8 @@
 
     function hitung(el) {
         const row = el.closest('tr');
+        
+        // 1. Hitung Selisih Air
         const butuh = parseFloat(row.querySelector('.inp-butuh').value) || 0;
         const sedia = parseFloat(row.querySelector('.inp-sedia').value) || 0;
         const selisih = (sedia - butuh).toFixed(2);
@@ -183,6 +188,14 @@
             colStatus.innerText = "CUKUP";
             colStatus.className = "col-status status-cukup";
         }
+
+        // 2. Hitung Total Luas Layanan (Olah + Tumbuh + Panen)
+        const olah = parseFloat(row.querySelector('.inp-olah').value) || 0;
+        const tumbuh = parseFloat(row.querySelector('.inp-tumbuh').value) || 0;
+        const panen = parseFloat(row.querySelector('.inp-panen').value) || 0;
+        
+        const totalLuas = (olah + tumbuh + panen).toFixed(2);
+        row.querySelector('.col-luas-total').innerText = totalLuas;
     }
 
     function zoomGambar(url, txt) {
@@ -214,7 +227,7 @@
             kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
             ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
             selisih: parseFloat(row.querySelector('.col-selisih').innerText.replace('+', '')) || 0,
-            luas_layanan: parseFloat(row.querySelector('.inp-luas').value) || 0,
+            luas_layanan: parseFloat(row.querySelector('.col-luas-total').innerText) || 0,
             pengolahan_tanah: parseFloat(row.querySelector('.inp-olah').value) || 0,
             pertumbuhan: parseFloat(row.querySelector('.inp-tumbuh').value) || 0,
             panen: parseFloat(row.querySelector('.inp-panen').value) || 0,
