@@ -69,7 +69,7 @@
         <table id="tabelRekap">
             <thead>
                 <tr>
-                  <th width="35px">NO</th>
+                    <th width="35px">NO</th>
                     <th width="150px">NAMA BENDUNG & FOTO</th>
                     <th width="80px">KEBUTUHAN<br>(m³/dtk)</th>
                     <th width="80px">KETERSEDIAAN<br>(m³/dtk)</th>
@@ -79,6 +79,7 @@
                     <th width="80px">PERTUMBUHAN</th>
                     <th width="80px">PANEN</th>
                     <th width="100px">LUAS LAYANAN<br>(HA)</th>
+                </tr>
             </thead>
             <tbody id="adminBody">
                 <tr><td colspan="10">Memuat data...</td></tr>
@@ -111,10 +112,18 @@
             return;
         }
 
+        // Daftar pencocokan diperbarui: PARAKAN HAJI tetap ada untuk deteksi index gambar
         const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
 
         tbody.innerHTML = data.map((item, index) => {
             let namaAsli = item.bendungan_dan_foto || "-";
+            
+            // Logika ganti nama tampilan khusus untuk Parakan Haji
+            let namaTampilan = namaAsli;
+            if (namaAsli.toUpperCase().includes("PARAKAN HAJI")) {
+                namaTampilan = "FREE INTAKE PARAKANHAJI";
+            }
+
             let idx = daftar.findIndex(d => namaAsli.toUpperCase().includes(d));
             
             // Logika gambar 9 dan 10 ditukar sesuai index.html
@@ -129,7 +138,7 @@
                 <td>
                     <div class="nama-foto-cell">
                         <img src="${fotoUrl}" class="img-admin" onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
-                        <strong style="font-size:10px;">${namaAsli}</strong>
+                        <strong style="font-size:10px;">${namaTampilan}</strong>
                     </div>
                 </td>
                 <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
