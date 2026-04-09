@@ -31,7 +31,6 @@
         .btn-red { background: #f44336; color: white; }
         .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
 
-        /* Modal Styles (Sama dengan Index) */
         #imageModal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
             width: 100%; height: 100%; background: rgba(0,0,0,0.9);
@@ -75,7 +74,7 @@
             <thead>
                 <tr>
                     <th width="70px">Tanggal</th>
-                   <th width="180px">NAMA BENDUNG & FOTO</th>
+                    <th width="180px">NAMA BENDUNG & FOTO</th>
                     <th>KEBUTUHAN<br>(l/dtk)</th>
                     <th>KETERSEDIAAN<br>(l/dtk)</th>
                     <th>KEKURANGAN / KELEBIHAN</th>
@@ -115,14 +114,17 @@
 
         const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
 
-       tbody.innerHTML = data.map(item => {
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11">Tidak ada data ditemukan.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(item => {
             const nama = item.bendungan_dan_foto || "-";
-            
-            // --- LOGIKA PERBAIKAN FOTO DI SINI ---
             let idx = daftar.findIndex(d => nama.toUpperCase().includes(d));
             let imageNum = idx + 1;
 
-            // Tukar gambar khusus untuk nomor 9 dan 10
+            // Logika tukar gambar 9 dan 10
             if (imageNum === 9) {
                 imageNum = 10;
             } else if (imageNum === 10) {
@@ -130,7 +132,6 @@
             }
 
             let fotoUrl = (idx !== -1) ? `img/${imageNum}.jpeg` : 'https://via.placeholder.com/100x70?text=No+Photo';
-            // -------------------------------------
 
             return `
             <tr>
@@ -160,7 +161,8 @@
                 </td>
             </tr>`;
         }).join('');
-    // Fungsi Zoom & Tutup Modal (SAMA DENGAN INDEX)
+    }
+
     function zoomGambar(url, txt) {
         document.getElementById('imageModal').style.display = "flex";
         document.getElementById('modalImg').src = url;
