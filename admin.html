@@ -55,7 +55,7 @@
 
 <div class="container">
     <div class="header-logo">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Logo_PUPR.png" alt="Logo">
+        <img src="img/g2.png">
         <h1>CAI TEPI SAWAH</h1>
         <p>UPTD PSDA WS CITANDUY</p>
     </div>
@@ -152,9 +152,6 @@
                 <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
                 <td style="background:${item.keterangan === 'CUKUP' ? '#e8f5e9' : '#ffebee'}">
                     <b style="color:${item.keterangan === 'CUKUP' ? '#2e7d32' : '#c62828'}">${item.keterangan || '-'}</b>
-                </td>
-                <td class="col-aksi">
-                    <button class="btn-red" style="padding:5px; border-radius:3px; border:none; color:white; cursor:pointer;" onclick="hapusData(${item.id})">Hapus</button>
                 </td>
             </tr>`;
         }).join('');
