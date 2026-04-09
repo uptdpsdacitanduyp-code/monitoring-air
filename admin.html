@@ -115,12 +115,22 @@
 
         const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
 
-        tbody.innerHTML = data.map(item => {
+       tbody.innerHTML = data.map(item => {
             const nama = item.bendungan_dan_foto || "-";
             
-            // Logika pencocokan foto berdasarkan nama bendung
+            // --- LOGIKA PERBAIKAN FOTO DI SINI ---
             let idx = daftar.findIndex(d => nama.toUpperCase().includes(d));
-            let fotoUrl = (idx !== -1) ? `img/${idx + 1}.jpeg` : 'https://via.placeholder.com/100x70?text=No+Photo';
+            let imageNum = idx + 1;
+
+            // Tukar gambar khusus untuk nomor 9 dan 10
+            if (imageNum === 9) {
+                imageNum = 10;
+            } else if (imageNum === 10) {
+                imageNum = 9;
+            }
+
+            let fotoUrl = (idx !== -1) ? `img/${imageNum}.jpeg` : 'https://via.placeholder.com/100x70?text=No+Photo';
+            // -------------------------------------
 
             return `
             <tr>
@@ -150,8 +160,6 @@
                 </td>
             </tr>`;
         }).join('');
-    }
-
     // Fungsi Zoom & Tutup Modal (SAMA DENGAN INDEX)
     function zoomGambar(url, txt) {
         document.getElementById('imageModal').style.display = "flex";
