@@ -6,84 +6,82 @@
     <title>Admin - Rekap Data Air & Lahan</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1450px; margin: auto; }
-        h2 { color: #333; text-align: center; text-transform: uppercase; border-bottom: 2px solid #2196F3; padding-bottom: 10px; }
         
+        /* Header Logo Style */
+        .header-logo { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #2196F3; padding-bottom: 15px; }
+        .header-logo img { width: 80px; height: auto; }
+        .header-logo h1 { margin: 5px 0; color: #0d47a1; font-size: 24px; text-transform: uppercase; }
+        .header-logo p { margin: 0; font-weight: bold; color: #555; font-size: 14px; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px; word-wrap: break-word; }
-        th { background: #333; color: white; text-transform: uppercase; height: 50px; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 10px; word-wrap: break-word; }
+        th { background: #f2f2f2; color: #333; text-transform: uppercase; height: 40px; }
         
-        .nama-foto-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 5px; }
-        .img-admin { 
-            width: 100px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; 
-            cursor: pointer; transition: 0.3s; 
-        }
-        .img-admin:hover { transform: scale(1.05); opacity: 0.8; }
+        .img-admin { width: 80px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
 
-        .filter-box { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
-        .status-cukup { color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 3px 6px; border-radius: 4px; }
-        .status-kurang { color: #c62828; font-weight: bold; background: #ffebee; padding: 3px 6px; border-radius: 4px; }
-
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; font-size: 12px; }
+        .filter-box { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; text-decoration: none; }
         .btn-blue { background: #2196F3; color: white; }
-        .btn-green { background: #3ecf8e; color: white; }
         .btn-red { background: #f44336; color: white; }
         .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
 
-        #imageModal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.9);
-            justify-content: center; align-items: center; flex-direction: column;
-        }
-        #modalImg { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 10px; }
-
+        /* --- CSS KHUSUS CETAK PDF AGAR TIDAK TERPOTONG --- */
         @media print {
-            .filter-box, .btn, a, .col-aksi, #imageModal { display: none !important; }
+            @page { 
+                size: A4 landscape; /* Paksa landscape agar tabel lebar muat */
+                margin: 1cm; 
+            }
             body { background: white; padding: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            .filter-box, .btn, .col-aksi, a, #imageModal { display: none !important; }
+            
+            table { width: 100%; border: 1px solid #000; }
+            th, td { font-size: 9px; padding: 4px; } /* Perkecil font saat cetak */
+            .header-logo { display: block !important; border-bottom: 2px solid #000; }
+            
+            /* Hindari tabel terpotong di tengah baris */
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; } 
         }
     </style>
 </head>
 <body>
 
-<div id="imageModal" onclick="tutupModal()">
-    <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer;">&times;</span>
-    <img id="modalImg">
-    <p id="caption" style="color: white; margin-top: 15px; font-size: 18px; font-weight: bold;"></p>
-</div>
-
 <div class="container">
-    <h2>Halaman Admin - Rekap Data Harian</h2>
-    
-    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+    <div class="header-logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Logo_PUPR.png" alt="Logo"> <h1>CAI TEPI SAWAH</h1>
+        <p>UPTD PSDA WS CITANDUY</p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;" class="no-print">
         <a href="index.html" class="btn btn-outline">← Kembali ke Form Input</a>
         <button class="btn btn-blue" onclick="window.print()">Cetak Laporan (PDF)</button>
         <button class="btn btn-red" onclick="hapusSemuaData()">Hapus Semua Rekap</button>
     </div>
 
-    <div class="filter-box">
+    <div class="filter-box no-print">
         <label>Filter Tanggal: </label>
         <input type="date" id="filterTgl">
-        <button class="btn btn-green" onclick="muatData()">Cari Data</button>
-        <button class="btn btn-outline" onclick="resetFilter()">Tampilkan Semua</button>
+        <button class="btn btn-blue" onclick="muatData()">Cari Data</button>
     </div>
 
     <div style="overflow-x: auto;">
-        <table>
+        <table id="tabelRekap">
             <thead>
                 <tr>
-                    <th width="70px">Tanggal</th>
-                    <th width="180px">NAMA BENDUNG & FOTO</th>
+                    <th width="30px">NO</th>
+                    <th width="150px">NAMA BENDUNG & FOTO</th>
                     <th>KEBUTUHAN<br>(l/dtk)</th>
                     <th>KETERSEDIAAN<br>(l/dtk)</th>
-                    <th>KEKURANGAN / KELEBIHAN</th>
-                    <th>LUAS LAYANAN (HEKTAR)</th>
-                    <th>PENGOLAHAN TANAH</th>
-                    <th>PERTUMBUHAN</th>
+                    <th>+/-</th>
+                    <th>LUAS LAYANAN</th>
+                    <th>OLAH TANAH</th>
+                    <th>TUMBUH</th>
                     <th>PANEN</th>
-                    <th width="90px">Keterangan</th>
-                    <th width="60px" class="col-aksi">Aksi</th>
+                    <th width="70px">KET</th>
+                    <th width="50px" class="col-aksi">AKSI</th>
                 </tr>
             </thead>
             <tbody id="adminBody">
@@ -101,107 +99,58 @@
     async function muatData() {
         const filter = document.getElementById('filterTgl').value;
         const tbody = document.getElementById('adminBody');
-        tbody.innerHTML = `<tr><td colspan="11">Sedang mengambil data...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11">Mengambil data...</td></tr>`;
 
         let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false });
         if (filter) query = query.eq('tanggal', filter);
 
         const { data, error } = await query;
-        if (error) {
-            tbody.innerHTML = `<tr><td colspan="11" style="color:red">Error: ${error.message}</td></tr>`;
-            return;
-        }
+        if (error) { tbody.innerHTML = `<tr><td colspan="11">Error: ${error.message}</td></tr>`; return; }
 
         const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
 
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11">Tidak ada data ditemukan.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = data.map(item => {
+        tbody.innerHTML = data.map((item, index) => {
             let namaAsli = item.bendungan_dan_foto || "-";
-            
-            // Ambil nama depannya saja (sebelum kurung)
             let namaHanya = namaAsli.split(' (')[0].toUpperCase();
-            // Tambahkan kata "BENDUNG " di depan jika belum ada
             let namaTampilan = namaHanya.startsWith("BENDUNG") ? namaHanya : "BENDUNG " + namaHanya;
             
             let idx = daftar.findIndex(d => namaAsli.toUpperCase().includes(d));
             let imageNum = idx + 1;
-
-            if (imageNum === 9) {
-                imageNum = 10;
-            } else if (imageNum === 10) {
-                imageNum = 9;
-            }
+            if (imageNum === 9) imageNum = 10; else if (imageNum === 10) imageNum = 9;
 
             let fotoUrl = (idx !== -1) ? `img/${imageNum}.jpeg` : 'https://via.placeholder.com/100x70?text=No+Photo';
 
             return `
             <tr>
-                <td>${formatTanggal(item.tanggal)}</td>
+                <td>${index + 1}</td>
                 <td>
                     <div class="nama-foto-cell">
-                        <img src="${fotoUrl}" class="img-admin" 
-                             onclick="zoomGambar('${fotoUrl}', '${namaTampilan}')"
-                             onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
+                        <img src="${fotoUrl}" class="img-admin">
                         <strong>${namaTampilan}</strong>
                     </div>
                 </td>
-                <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-                <td style="font-weight:bold">${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
-                <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
-                <td>
-                    <span class="${(item.keterangan === 'CUKUP') ? 'status-cukup' : 'status-kurang'}">
-                        ${item.keterangan || '-'}
-                    </span>
+                <td>${item.kebutuhan || 0}</td>
+                <td>${item.ketersediaan || 0}</td>
+                <td>${item.selisih || 0}</td>
+                <td>${item.luas_layanan || 0}</td>
+                <td>${item.pengolahan_tanah || 0}</td>
+                <td>${item.pertumbuhan || 0}</td>
+                <td>${item.panen || 0}</td>
+                <td style="background:${item.keterangan === 'CUKUP' ? '#e8f5e9' : '#ffebee'}">
+                    <strong>${item.keterangan || '-'}</strong>
                 </td>
                 <td class="col-aksi">
-                    <button class="btn btn-red" style="padding:4px 8px; font-size:10px;" onclick="hapusData(${item.id})">Hapus</button>
+                    <button class="btn-red" onclick="hapusData(${item.id})">X</button>
                 </td>
             </tr>`;
         }).join('');
     }
 
-    function zoomGambar(url, txt) {
-        document.getElementById('imageModal').style.display = "flex";
-        document.getElementById('modalImg').src = url;
-        document.getElementById('caption').innerText = txt;
-    }
-
-    function tutupModal() { 
-        document.getElementById('imageModal').style.display = "none"; 
-    }
-
     async function hapusData(id) {
-        if (confirm("Hapus data ini?")) {
-            const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
-            if (error) alert(error.message); else muatData();
+        if (confirm("Hapus data?")) {
+            await _supabase.from('laporan_air').delete().eq('id', id);
+            muatData();
         }
-    }
-
-    async function hapusSemuaData() {
-        const pass = prompt("Ketik 'KONFIRMASI' untuk hapus semua:");
-        if (pass === "KONFIRMASI") {
-            const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
-            if (error) alert(error.message); else muatData();
-        }
-    }
-
-    function formatTanggal(tgl) {
-        if(!tgl) return "-";
-        const d = new Date(tgl);
-        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    }
-
-    function resetFilter() {
-        document.getElementById('filterTgl').value = "";
-        muatData();
     }
 
     window.onload = muatData;
