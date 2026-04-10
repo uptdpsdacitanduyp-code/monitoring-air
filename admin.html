@@ -112,23 +112,31 @@
             return;
         }
 
-        // Daftar pencocokan diperbarui: PARAKAN HAJI tetap ada untuk deteksi index gambar
-        const daftar = ["CIMULU", "CIGEDE", "MUHARA", "BARANANGSIANG", "CIKEMBANG", "CIPUTRAHAJI", "GUNUNG PUTRI", "WANGUNDIREJA", "LAKSANA HARJA", "PARAKAN HAJI"];
+        // --- DISESUAIKAN DENGAN DAFTAR DI INDEX.HTML ---
+        const daftar = [
+            "BENDUNG CIMULU", 
+            "BENDUNG LAKSANAHARJA", 
+            "BENDUNG CIKEMBANG", 
+            "BENDUNG BARANANGSIANG", 
+            "BENDUNG GUNUNG PUTRI", 
+            "BENDUNG CIPUTRAHAJI", 
+            "BENDUNG WANGUNDIREJA", 
+            "BENDUNG MUHARA", 
+            "BENDUNG CIGEDE", 
+            "FREE INTAKE PARAKANHAJI"
+        ];
 
         tbody.innerHTML = data.map((item, index) => {
             let namaAsli = item.bendungan_dan_foto || "-";
             
-            // Logika ganti nama tampilan khusus untuk Parakan Haji
-            let namaTampilan = namaAsli;
-            if (namaAsli.toUpperCase().includes("PARAKAN HAJI")) {
-                namaTampilan = "FREE INTAKE PARAKANHAJI";
-            }
+            // Mencari index berdasarkan daftar di atas
+            let idx = daftar.findIndex(d => namaAsli.toUpperCase() === d.toUpperCase() || 
+                                           (d === "FREE INTAKE PARAKANHAJI" && namaAsli.toUpperCase().includes("PARAKAN")));
 
-            let idx = daftar.findIndex(d => namaAsli.toUpperCase().includes(d));
-            
-            // Logika gambar 9 dan 10 ditukar sesuai index.html
+            // Logika urutan gambar disamakan dengan renderTabel() di index.html
             let imageNum = idx + 1;
-            if (imageNum === 9) imageNum = 10; else if (imageNum === 10) imageNum = 9;
+            if (imageNum === 9) imageNum = 10; 
+            else if (imageNum === 10) imageNum = 9;
 
             let fotoUrl = (idx !== -1) ? `img/${imageNum}.jpeg` : 'https://via.placeholder.com/100x70?text=No+Photo';
 
@@ -138,7 +146,7 @@
                 <td>
                     <div class="nama-foto-cell">
                         <img src="${fotoUrl}" class="img-admin" onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
-                        <strong style="font-size:10px;">${namaTampilan}</strong>
+                        <strong style="font-size:10px;">${namaAsli}</strong>
                     </div>
                 </td>
                 <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
