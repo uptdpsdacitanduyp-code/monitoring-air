@@ -50,7 +50,6 @@
         input[type="number"] { width: 90%; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-size: 11px;}
         input:focus { border-color: #2196F3; outline: none; box-shadow: 0 0 5px rgba(33,150,243,0.3); }
 
-        /* Style untuk kolom hasil otomatis agar terlihat berbeda */
         .col-readonly { background-color: #f9f9f9; font-weight: bold; color: #333; }
 
         .btn-save { 
@@ -103,8 +102,8 @@
                 <tr>
                     <th width="35px">NO</th>
                     <th width="150px">NAMA BENDUNG & FOTO</th>
-                    <th width="80px">KEBUTUHAN<br>(m³/dtk)</th>
-                    <th width="80px">KETERSEDIAAN<br>(m³/dtk)</th>
+                    <th width="80px">KEBUTUHAN<br>(L/dtk)</th>
+                    <th width="80px">KETERSEDIAAN<br>(L/dtk)</th>
                     <th width="90px">JUMLAH KEKURANGAN / KELEBIHAN DEBIT AIR</th>
                     <th width="110px">KETERANGAN</th>
                     <th width="80px">PENGOLAHAN TANAH</th>
@@ -129,8 +128,8 @@
     document.getElementById('tgl_input').valueAsDate = new Date();
 
     const daftarBendung = [
-        "BENDUNG CIMULU", "BENDUNG CIGEDE", "BENDUNG MUHARA", "BENDUNG BARANANGSIANG", "BENDUNG CIKEMBANG", 
-        "BENDUNG CIPUTRAHAJI", "BENDUNG GUNUNG PUTRI", "BENDUNG WANGUNDIREJA", "BENDUNG LAKSANA HARJA", "FREE INTAKE PARAKAN HAJI"
+        "BENDUNG CIMULU", "BENDUNG LAKSANAHARJA", "BENDUNG CIKEMBANG", "BENDUNG BARANANGSIANG", "BENDUNG GUNUNG PUTRI", 
+        "BENDUNG CIPUTRAHAJI", "BENDUNG WANGUNDIREJA", "BENDUNG MUHARA", "BENDUNG CIGEDE", "FREE INTAKE PARAKANHAJI"
     ];
 
     function renderTabel() {
@@ -155,7 +154,7 @@
                             <span class="nama-text" style="font-weight:bold; font-size:10px;">${nama}</span>
                         </div>
                     </td>
-                    <td><input type="number" step="0.01" class="inp-butuh" value="0.00" oninput="hitung(this)"></td>
+                    <td><input type="number" step="0.01" class="inp-butuh col-readonly" value="0.00" readonly></td>
                     <td><input type="number" step="0.01" class="inp-sedia" value="0.00" oninput="hitung(this)"></td>
                     <td class="col-selisih" style="font-weight:bold;">0.00</td>
                     <td class="col-status status-cukup">CUKUP</td>
@@ -171,15 +170,28 @@
     function hitung(el) {
         const row = el.closest('tr');
         
-        // 1. Hitung Selisih Air
-        const butuh = parseFloat(row.querySelector('.inp-butuh').value) || 0;
+        // Ambil nilai input Luas Layanan
+        const olah = parseFloat(row.querySelector('.inp-olah').value) || 0;    // Variabel A
+        const tumbuh = parseFloat(row.querySelector('.inp-tumbuh').value) || 0; // Variabel B
+        const panen = parseFloat(row.querySelector('.inp-panen').value) || 0;   // Variabel C
+        
+        // 1. Hitung Total Luas Layanan (A + B + C)
+        const totalLuas = (olah + tumbuh + panen).toFixed(2);
+        row.querySelector('.col-luas-total').innerText = totalLuas;
+
+        // 2. Hitung Kebutuhan otomatis berdasarkan Rumus PDF
+        const hasilButuh = ((olah * 1.25) + (tumbuh * 0.85) + (panen * 0.30)) * 1.25;
+        const inpButuh = row.querySelector('.inp-butuh');
+        inpButuh.value = hasilButuh.toFixed(2);
+
+        // 3. Hitung Selisih dan Status
         const sedia = parseFloat(row.querySelector('.inp-sedia').value) || 0;
-        const selisih = (sedia - butuh).toFixed(2);
+        const selisih = (sedia - hasilButuh).toFixed(2);
         
         const colSelisih = row.querySelector('.col-selisih');
         const colStatus = row.querySelector('.col-status');
         
-        colSelisih.innerText = (selisih > 0 ? "+" : "") + selisih;
+        colSelisih.innerText = (parseFloat(selisih) > 0 ? "+" : "") + selisih;
         
         if (parseFloat(selisih) < 0) {
             colStatus.innerText = "KURANG AIR";
@@ -188,14 +200,6 @@
             colStatus.innerText = "CUKUP";
             colStatus.className = "col-status status-cukup";
         }
-
-        // 2. Hitung Total Luas Layanan (Olah + Tumbuh + Panen)
-        const olah = parseFloat(row.querySelector('.inp-olah').value) || 0;
-        const tumbuh = parseFloat(row.querySelector('.inp-tumbuh').value) || 0;
-        const panen = parseFloat(row.querySelector('.inp-panen').value) || 0;
-        
-        const totalLuas = (olah + tumbuh + panen).toFixed(2);
-        row.querySelector('.col-luas-total').innerText = totalLuas;
     }
 
     function zoomGambar(url, txt) {
