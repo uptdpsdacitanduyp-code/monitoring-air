@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f4f4; margin: 0; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1550px; margin: auto; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1600px; margin: auto; }
         
         .header-logo { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #2196F3; padding-bottom: 15px; }
         .header-logo img { width: 70px; height: auto; margin-bottom: 10px; }
@@ -21,15 +21,17 @@
         .nama-foto-cell { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         
         .img-admin { 
-            width: 120px; height: 80px; 
+            width: 110px; height: 70px; 
             object-fit: cover; border-radius: 6px; border: 1px solid #ccc;
         }
 
         .filter-box { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; align-items: center; justify-content: center; }
-        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
         .btn-blue { background: #2196F3; color: white; }
         .btn-red { background: #f44336; color: white; }
         .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+
+        .tag-tgl { background: #333; color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; margin-bottom: 4px; }
 
         @media print {
             @page { size: A4 landscape; margin: 0.5cm; }
@@ -39,7 +41,7 @@
             table { width: 100%; border: 1px solid #000; }
             th { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             td { font-size: 9px; padding: 4px; }
-            .img-admin { width: 110px; height: 75px; border: 1px solid #000; }
+            .img-admin { width: 100px; height: 65px; border: 1px solid #000; }
         }
     </style>
 </head>
@@ -48,21 +50,21 @@
 <div class="container">
     <div class="header-logo">
         <img src="img/g2.png" onerror="this.src='https://via.placeholder.com/70?text=LOGO'">
-        <h1>CAI TEPI SAWAH</h1>
+        <h1>REKAPITULASI CAI TEPI SAWAH</h1>
         <p>UPTD PSDA WS CITANDUY</p>
     </div>
 
     <div class="no-print" style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
-        <a href="index.html" class="btn btn-outline">← Form Input</a>
-        <button class="btn btn-blue" onclick="window.print()">Cetak PDF (Landscape)</button>
+        <a href="index.html" class="btn btn-outline">← Form Input Data</a>
+        <button class="btn btn-blue" onclick="window.print()">Cetak Laporan (PDF)</button>
         <button class="btn btn-red" onclick="hapusSemuaData()">Hapus Semua Data</button>
     </div>
 
     <div class="filter-box no-print">
-        <label><b>Filter Tanggal:</b></label>
+        <label><b>Filter Berdasarkan Tanggal:</b></label>
         <input type="date" id="filterTgl">
         <button class="btn btn-blue" onclick="muatData()">Cari Data</button>
-        <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
+        <button class="btn btn-outline" onclick="resetFilter()">Tampilkan Semua</button>
     </div>
 
     <div style="overflow-x: auto;">
@@ -70,19 +72,19 @@
             <thead>
                 <tr>
                     <th width="35px">NO</th>
-                    <th width="150px">NAMA BENDUNG & FOTO</th>
+                    <th width="150px">TANGGAL & NAMA BENDUNG</th>
                     <th width="80px">KEBUTUHAN<br>(L/dtk)</th>
                     <th width="80px">KETERSEDIAAN<br>(L/dtk)</th>
-                    <th width="90px">JUMLAH KEKURANGAN / KELEBIHAN DEBIT AIR</th>
-                    <th width="110px">KETERANGAN</th>
+                    <th width="90px">JUMLAH KEKURANGAN / KELEBIHAN</th>
+                    <th width="100px">KETERANGAN</th>
                     <th width="80px">PENGOLAHAN TANAH</th>
                     <th width="80px">PERTUMBUHAN</th>
                     <th width="80px">PANEN</th>
-                    <th width="100px">LUAS LAYANAN<br>(HA)</th>
+                    <th width="90px">LUAS TOTAL<br>(HA)</th>
                 </tr>
             </thead>
             <tbody id="adminBody">
-                <tr><td colspan="10">Memuat data...</td></tr>
+                <tr><td colspan="10">Memuat data dari database...</td></tr>
             </tbody>
         </table>
     </div>
@@ -93,47 +95,40 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Daftar ini harus sama persis urutannya dengan index.html untuk pencocokan gambar
+    const daftarBendung = [
+        "BENDUNG CIMULU", "BENDUNG LAKSANAHARJA", "BENDUNG CIKEMBANG", "BENDUNG BARANANGSIANG", "BENDUNG GUNUNG PUTRI", 
+        "BENDUNG CIPUTRAHAJI", "BENDUNG WANGUNDIREJA", "BENDUNG MUHARA", "BENDUNG CIGEDE", "FREE INTAKE PARAKANHAJI"
+    ];
+
     async function muatData() {
         const filter = document.getElementById('filterTgl').value;
         const tbody = document.getElementById('adminBody');
-        tbody.innerHTML = `<tr><td colspan="10">Sedang memproses...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10">⏳ Memproses data...</td></tr>`;
 
-        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false });
+        let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false }).order('bendungan_dan_foto', { ascending: true });
+        
         if (filter) query = query.eq('tanggal', filter);
 
         const { data, error } = await query;
+
         if (error) { 
             tbody.innerHTML = `<tr><td colspan="10" style="color:red">Error: ${error.message}</td></tr>`; 
             return; 
         }
 
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10">Tidak ada data untuk tanggal ini.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10">Belum ada data tersimpan untuk periode ini.</td></tr>`;
             return;
         }
 
-        // --- DISESUAIKAN DENGAN DAFTAR DI INDEX.HTML ---
-        const daftar = [
-            "BENDUNG CIMULU", 
-            "BENDUNG LAKSANAHARJA", 
-            "BENDUNG CIKEMBANG", 
-            "BENDUNG BARANANGSIANG", 
-            "BENDUNG GUNUNG PUTRI", 
-            "BENDUNG CIPUTRAHAJI", 
-            "BENDUNG WANGUNDIREJA", 
-            "BENDUNG MUHARA", 
-            "BENDUNG CIGEDE", 
-            "FREE INTAKE PARAKANHAJI"
-        ];
-
         tbody.innerHTML = data.map((item, index) => {
-            let namaAsli = item.bendungan_dan_foto || "-";
+            const namaBendung = item.bendungan_dan_foto || "-";
             
-            // Mencari index berdasarkan daftar di atas
-            let idx = daftar.findIndex(d => namaAsli.toUpperCase() === d.toUpperCase() || 
-                                           (d === "FREE INTAKE PARAKANHAJI" && namaAsli.toUpperCase().includes("PARAKAN")));
-
-            // Logika urutan gambar disamakan dengan renderTabel() di index.html
+            // Cari index bendung untuk menentukan gambar yang benar
+            let idx = daftarBendung.findIndex(d => namaBendung.toUpperCase() === d.toUpperCase());
+            
+            // Logika urutan gambar (Sesuai dengan Form Input)
             let imageNum = idx + 1;
             if (imageNum === 9) imageNum = 10; 
             else if (imageNum === 10) imageNum = 9;
@@ -145,13 +140,14 @@
                 <td>${index + 1}</td>
                 <td>
                     <div class="nama-foto-cell">
+                        <span class="tag-tgl">${item.tanggal}</span>
                         <img src="${fotoUrl}" class="img-admin" onerror="this.src='https://via.placeholder.com/100x70?text=No+Photo'">
-                        <strong style="font-size:10px;">${namaAsli}</strong>
+                        <strong style="font-size:9px;">${namaBendung}</strong>
                     </div>
                 </td>
                 <td>${parseFloat(item.kebutuhan || 0).toFixed(2)}</td>
                 <td>${parseFloat(item.ketersediaan || 0).toFixed(2)}</td>
-                <td style="font-weight:bold; color:${item.selisih < 0 ? 'red' : 'green'}">
+                <td style="font-weight:bold; color:${item.selisih < 0 ? '#d32f2f' : '#2e7d32'}">
                     ${item.selisih > 0 ? '+' : ''}${parseFloat(item.selisih || 0).toFixed(2)}
                 </td>
                 <td style="background:${item.keterangan === 'CUKUP' ? '#e8f5e9' : '#ffebee'}">
@@ -160,17 +156,21 @@
                 <td>${parseFloat(item.pengolahan_tanah || 0).toFixed(2)}</td>
                 <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
                 <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
-                <td style="font-weight:bold; background:#f9f9f9;">${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
+                <td style="font-weight:bold; background:#fcfcfc;">${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
             </tr>`;
         }).join('');
     }
 
     async function hapusSemuaData() {
-        const konfirmasi = prompt("Ketik 'HAPUS' untuk menghapus SEMUA data rekap:");
-        if (konfirmasi === "HAPUS") {
+        const password = prompt("PERINGATAN: Semua data akan terhapus selamanya!\nKetik 'HAPUS' untuk mengonfirmasi:");
+        if (password === "HAPUS") {
             const { error } = await _supabase.from('laporan_air').delete().neq('id', 0);
-            if (error) alert("Gagal: " + error.message);
-            else muatData();
+            if (error) {
+                alert("Gagal menghapus: " + error.message);
+            } else {
+                alert("✅ Semua data berhasil dibersihkan.");
+                muatData();
+            }
         }
     }
 
@@ -179,6 +179,7 @@
         muatData();
     }
 
+    // Jalankan saat halaman dibuka
     window.onload = muatData;
 </script>
 </body>
