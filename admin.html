@@ -30,6 +30,10 @@
         .btn-blue { background: #2196F3; color: white; }
         .btn-red { background: #f44336; color: white; }
         .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+        
+        /* Gaya khusus tombol hapus di baris */
+        .btn-delete-row { background: #ff5252; color: white; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 9px; font-weight: bold; }
+        .btn-delete-row:hover { background: #d32f2f; }
 
         .tag-tgl { background: #333; color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; margin-bottom: 4px; }
 
@@ -37,7 +41,7 @@
             @page { size: A4 landscape; margin: 0.5cm; }
             body { background: white; padding: 0; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
-            .no-print, .btn, .filter-box { display: none !important; }
+            .no-print, .btn, .filter-box, .col-aksi { display: none !important; }
             table { width: 100%; border: 1px solid #000; }
             th { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             td { font-size: 9px; padding: 4px; }
@@ -80,11 +84,12 @@
                     <th width="80px">PENGOLAHAN TANAH</th>
                     <th width="80px">PERTUMBUHAN</th>
                     <th width="80px">PANEN</th>
-                    <th width="90px">LUAS TOTAL<br>(HA)</th>
+                    <th width="80px">LUAS TOTAL<br>(HA)</th>
+                    <th width="70px" class="col-aksi">AKSI</th>
                 </tr>
             </thead>
             <tbody id="adminBody">
-                <tr><td colspan="10">Memuat data dari database...</td></tr>
+                <tr><td colspan="11">Memuat data dari database...</td></tr>
             </tbody>
         </table>
     </div>
@@ -95,7 +100,6 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncmVxZ3B1dHNhb2N3YWxvaXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTk0NjIsImV4cCI6MjA5MDQzNTQ2Mn0.v4npuC4Pw3ftAuL4p7MH1HQNppBrVqWnc_zWv40JrDg';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Daftar ini harus sama persis urutannya dengan index.html untuk pencocokan gambar
     const daftarBendung = [
         "BENDUNG CIMULU", "BENDUNG LAKSANAHARJA", "BENDUNG CIKEMBANG", "BENDUNG BARANANGSIANG", "BENDUNG GUNUNG PUTRI", 
         "BENDUNG CIPUTRAHAJI", "BENDUNG WANGUNDIREJA", "BENDUNG MUHARA", "BENDUNG CIGEDE", "FREE INTAKE PARAKANHAJI"
@@ -104,7 +108,7 @@
     async function muatData() {
         const filter = document.getElementById('filterTgl').value;
         const tbody = document.getElementById('adminBody');
-        tbody.innerHTML = `<tr><td colspan="10">⏳ Memproses data...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11">⏳ Memproses data...</td></tr>`;
 
         let query = _supabase.from('laporan_air').select('*').order('tanggal', { ascending: false }).order('bendungan_dan_foto', { ascending: true });
         
@@ -113,22 +117,19 @@
         const { data, error } = await query;
 
         if (error) { 
-            tbody.innerHTML = `<tr><td colspan="10" style="color:red">Error: ${error.message}</td></tr>`; 
+            tbody.innerHTML = `<tr><td colspan="11" style="color:red">Error: ${error.message}</td></tr>`; 
             return; 
         }
 
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10">Belum ada data tersimpan untuk periode ini.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11">Belum ada data tersimpan untuk periode ini.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = data.map((item, index) => {
             const namaBendung = item.bendungan_dan_foto || "-";
-            
-            // Cari index bendung untuk menentukan gambar yang benar
             let idx = daftarBendung.findIndex(d => namaBendung.toUpperCase() === d.toUpperCase());
             
-            // Logika urutan gambar (Sesuai dengan Form Input)
             let imageNum = idx + 1;
             if (imageNum === 9) imageNum = 10; 
             else if (imageNum === 10) imageNum = 9;
@@ -157,8 +158,24 @@
                 <td>${parseFloat(item.pertumbuhan || 0).toFixed(2)}</td>
                 <td>${parseFloat(item.panen || 0).toFixed(2)}</td>
                 <td style="font-weight:bold; background:#fcfcfc;">${parseFloat(item.luas_layanan || 0).toFixed(2)}</td>
+                <td class="col-aksi">
+                    <button class="btn-delete-row" onclick="hapusDataBaris(${item.id}, '${namaBendung}')">HAPUS</button>
+                </td>
             </tr>`;
         }).join('');
+    }
+
+    // FUNGSI BARU: Hapus per baris
+    async function hapusDataBaris(id, nama) {
+        if (confirm(`Apakah Anda yakin ingin menghapus data "${nama}"?`)) {
+            const { error } = await _supabase.from('laporan_air').delete().eq('id', id);
+            if (error) {
+                alert("Gagal menghapus data: " + error.message);
+            } else {
+                alert("✅ Data berhasil dihapus.");
+                muatData(); // Refresh tabel
+            }
+        }
     }
 
     async function hapusSemuaData() {
@@ -179,7 +196,6 @@
         muatData();
     }
 
-    // Jalankan saat halaman dibuka
     window.onload = muatData;
 </script>
 </body>
