@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Monitoring Air Lengkap - 10 Bendung</title>
+    <title>Laporan Monitoring Air - Per Bendung</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
@@ -52,13 +52,12 @@
 
         .col-readonly { background-color: #f9f9f9; font-weight: bold; color: #333; }
 
-        .btn-save { 
-            padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 6px; 
-            cursor: pointer; font-weight: bold; width: 100%; margin-top: 25px; font-size: 16px; 
-            transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        .btn-row-save {
+            padding: 8px 12px; background: #2e7d32; color: white; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 10px; font-weight: bold; transition: 0.3s; width: 100%;
         }
-        .btn-save:hover { background: #1b5e20; }
-        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-row-save:hover { background: #1b5e20; }
+        .btn-row-save:disabled { background: #ccc; cursor: not-allowed; }
 
         #imageModal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
@@ -104,20 +103,19 @@
                     <th width="150px">NAMA BENDUNG & FOTO</th>
                     <th width="80px">KEBUTUHAN<br>(L/dtk)</th>
                     <th width="80px">KETERSEDIAAN<br>(L/dtk)</th>
-                    <th width="90px">JUMLAH KEKURANGAN / KELEBIHAN DEBIT AIR</th>
+                    <th width="90px">JUMLAH KEKURANGAN / KELEBIHAN</th>
                     <th width="110px">KETERANGAN</th>
                     <th width="80px">PENGOLAHAN TANAH</th>
                     <th width="80px">PERTUMBUHAN</th>
                     <th width="80px">PANEN</th>
-                    <th width="100px">LUAS LAYANAN<br>(HA)</th>
+                    <th width="90px">LUAS LAYANAN<br>(HA)</th>
+                    <th width="90px">AKSI</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
             </tbody>
         </table>
     </div>
-
-    <button class="btn-save" id="btnSimpan" onclick="simpanKeSupabase()">SIMPAN SEMUA DATA KE DATABASE</button>
 </div>
 
 <script>
@@ -162,6 +160,9 @@
                     <td><input type="number" step="0.01" class="inp-tumbuh" value="0.00" oninput="hitung(this)"></td>
                     <td><input type="number" step="0.01" class="inp-panen" value="0.00" oninput="hitung(this)"></td>
                     <td class="col-luas-total col-readonly">0.00</td>
+                    <td>
+                        <button class="btn-row-save" onclick="simpanPerBaris(this)">SIMPAN</button>
+                    </td>
                 </tr>`;
         });
         tbody.innerHTML = htmlContent;
@@ -169,22 +170,17 @@
 
     function hitung(el) {
         const row = el.closest('tr');
+        const olah = parseFloat(row.querySelector('.inp-olah').value) || 0;
+        const tumbuh = parseFloat(row.querySelector('.inp-tumbuh').value) || 0;
+        const panen = parseFloat(row.querySelector('.inp-panen').value) || 0;
         
-        // Ambil nilai input Luas Layanan
-        const olah = parseFloat(row.querySelector('.inp-olah').value) || 0;    // Variabel A
-        const tumbuh = parseFloat(row.querySelector('.inp-tumbuh').value) || 0; // Variabel B
-        const panen = parseFloat(row.querySelector('.inp-panen').value) || 0;   // Variabel C
-        
-        // 1. Hitung Total Luas Layanan (A + B + C)
         const totalLuas = (olah + tumbuh + panen).toFixed(2);
         row.querySelector('.col-luas-total').innerText = totalLuas;
 
-        // 2. Hitung Kebutuhan otomatis berdasarkan Rumus PDF
         const hasilButuh = ((olah * 1.25) + (tumbuh * 0.85) + (panen * 0.30)) * 1.25;
         const inpButuh = row.querySelector('.inp-butuh');
         inpButuh.value = hasilButuh.toFixed(2);
 
-        // 3. Hitung Selisih dan Status
         const sedia = parseFloat(row.querySelector('.inp-sedia').value) || 0;
         const selisih = (sedia - hasilButuh).toFixed(2);
         
@@ -202,6 +198,46 @@
         }
     }
 
+    async function simpanPerBaris(btn) {
+        const tgl = document.getElementById('tgl_input').value;
+        if (!tgl) {
+            alert("Silakan pilih tanggal terlebih dahulu!");
+            return;
+        }
+
+        const row = btn.closest('tr');
+        const namaBendung = row.querySelector('.nama-text').innerText;
+
+        if (!confirm(`Simpan data untuk ${namaBendung}?`)) return;
+
+        const data = {
+            tanggal: tgl,
+            bendungan_dan_foto: namaBendung,
+            kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
+            ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
+            selisih: parseFloat(row.querySelector('.col-selisih').innerText.replace('+', '')) || 0,
+            luas_layanan: parseFloat(row.querySelector('.col-luas-total').innerText) || 0,
+            pengolahan_tanah: parseFloat(row.querySelector('.inp-olah').value) || 0,
+            pertumbuhan: parseFloat(row.querySelector('.inp-tumbuh').value) || 0,
+            panen: parseFloat(row.querySelector('.inp-panen').value) || 0,
+            keterangan: row.querySelector('.col-status').innerText
+        };
+
+        btn.innerText = "⏳...";
+        btn.disabled = true;
+
+        try {
+            const { error } = await _supabase.from('laporan_air').insert([data]);
+            if (error) throw error;
+            alert(`✅ Data ${namaBendung} berhasil disimpan!`);
+        } catch (err) {
+            alert("❌ Gagal Simpan: " + err.message);
+        } finally {
+            btn.innerText = "SIMPAN";
+            btn.disabled = false;
+        }
+    }
+
     function zoomGambar(url, txt) {
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImg');
@@ -213,45 +249,6 @@
 
     function tutupModal() { 
         document.getElementById('imageModal').style.display = "none"; 
-    }
-
-    async function simpanKeSupabase() {
-        const tgl = document.getElementById('tgl_input').value;
-        if (!tgl) {
-            alert("Silakan pilih tanggal terlebih dahulu!");
-            return;
-        }
-
-        if (!confirm("Apakah Anda yakin ingin menyimpan data ini?")) return;
-
-        const rows = document.querySelectorAll('.row-data');
-        const payload = Array.from(rows).map(row => ({
-            tanggal: tgl,
-            bendungan_dan_foto: row.querySelector('.nama-text').innerText,
-            kebutuhan: parseFloat(row.querySelector('.inp-butuh').value) || 0,
-            ketersediaan: parseFloat(row.querySelector('.inp-sedia').value) || 0,
-            selisih: parseFloat(row.querySelector('.col-selisih').innerText.replace('+', '')) || 0,
-            luas_layanan: parseFloat(row.querySelector('.col-luas-total').innerText) || 0,
-            pengolahan_tanah: parseFloat(row.querySelector('.inp-olah').value) || 0,
-            pertumbuhan: parseFloat(row.querySelector('.inp-tumbuh').value) || 0,
-            panen: parseFloat(row.querySelector('.inp-panen').value) || 0,
-            keterangan: row.querySelector('.col-status').innerText
-        }));
-
-        const btn = document.getElementById('btnSimpan');
-        btn.innerText = "⏳ SEDANG MENYIMPAN...";
-        btn.disabled = true;
-
-        try {
-            const { error } = await _supabase.from('laporan_air').insert(payload);
-            if (error) throw error;
-            alert("✅ Berhasil! Data telah disimpan.");
-        } catch (err) {
-            alert("❌ Gagal Simpan: " + err.message);
-        } finally {
-            btn.innerText = "SIMPAN SEMUA DATA KE DATABASE";
-            btn.disabled = false;
-        }
     }
 
     window.onload = renderTabel;
